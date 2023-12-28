@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,15 +28,10 @@
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NICollectionViewCellFactory
 
-@synthesize objectToCellMap = _objectToCellMap;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)init {
   if ((self = [super init])) {
     _objectToCellMap = [[NSMutableDictionary alloc] init];
@@ -45,8 +40,6 @@
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 + (UICollectionViewCell *)cellWithClass:(Class)collectionViewCellClass
                          collectionView:(UICollectionView *)collectionView
                               indexPath:(NSIndexPath *)indexPath
@@ -58,6 +51,13 @@
   if ([collectionViewCellClass respondsToSelector:@selector(shouldAppendObjectClassToReuseIdentifier)]
       && [collectionViewCellClass shouldAppendObjectClassToReuseIdentifier]) {
     identifier = [identifier stringByAppendingFormat:@".%@", NSStringFromClass([object class])];
+  }
+
+  if ([object respondsToSelector:@selector(reuseIdentifierSuffix)]) {
+    NSString* suffix = [object reuseIdentifierSuffix];
+    if (suffix.length) {
+      identifier = [identifier stringByAppendingFormat:@".%@", suffix];
+    }
   }
 
   [collectionView registerClass:collectionViewCellClass forCellWithReuseIdentifier:identifier];
@@ -72,30 +72,58 @@
   return cell;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-+ (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
-                        cellForCollectionView:(UICollectionView *)collectionView
-                                  atIndexPath:(NSIndexPath *)indexPath
-                                   withObject:(id)object {
++ (UICollectionViewCell *)cellWithNib:(UINib *)collectionViewCellNib
+                       collectionView:(UICollectionView *)collectionView
+                            indexPath:(NSIndexPath *)indexPath
+                               object:(id)object {
   UICollectionViewCell* cell = nil;
 
-  // If this assertion fires then your app is about to crash. You need to either add an explicit
-  // binding in a NICollectionViewCellFactory object or implement the NICollectionViewCellObject protocol on this object and
-  // return a cell class.
-  NIDASSERT([object respondsToSelector:@selector(collectionViewCellClass)]);
+  NSString* identifier = NSStringFromClass([object class]);
 
-  // Only NICollectionViewCellObject-conformant objects may pass.
-  if ([object respondsToSelector:@selector(collectionViewCellClass)]) {
-    Class collectionViewCellClass = [object collectionViewCellClass];
-    cell = [self cellWithClass:collectionViewCellClass collectionView:collectionView indexPath:indexPath object:object];
+  if ([object respondsToSelector:@selector(reuseIdentifierSuffix)]) {
+    NSString* suffix = [object reuseIdentifierSuffix];
+    if (suffix.length) {
+      identifier = [identifier stringByAppendingFormat:@".%@", suffix];
+    }
+  }
+
+  [collectionView registerNib:collectionViewCellNib forCellWithReuseIdentifier:identifier];
+
+  cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+
+  // Allow the cell to configure itself with the object's information.
+  if ([cell respondsToSelector:@selector(shouldUpdateCellWithObject:)]) {
+    [(id<NICollectionViewCell>)cell shouldUpdateCellWithObject:object];
   }
 
   return cell;
 }
 
++ (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel
+                        cellForCollectionView:(UICollectionView *)collectionView
+                                  atIndexPath:(NSIndexPath *)indexPath
+                                   withObject:(id)object {
+  UICollectionViewCell* cell = nil;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+  // Only NICollectionViewCellObject-conformant objects may pass.
+  if ([object respondsToSelector:@selector(collectionViewCellClass)]) {
+    Class collectionViewCellClass = [object collectionViewCellClass];
+    cell = [self cellWithClass:collectionViewCellClass collectionView:collectionView indexPath:indexPath object:object];
+
+  } else if ([object respondsToSelector:@selector(collectionViewCellNib)]) {
+    UINib* nib = [object collectionViewCellNib];
+    cell = [self cellWithNib:nib collectionView:collectionView indexPath:indexPath object:object];
+  }
+
+  // If this assertion fires then your app is about to crash. You need to either add an explicit
+  // binding in a NICollectionViewCellFactory object or implement either
+  // NICollectionViewCellObject or NICollectionViewNibCellObject on this object and return a cell
+  // class.
+  NIDASSERT(nil != cell);
+
+  return cell;
+}
+
 - (Class)collectionViewCellClassFromObject:(id)object {
   if (nil == object) {
     return nil;
@@ -116,9 +144,7 @@
   return collectionViewCellClass;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
+- (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel
                    cellForCollectionView:(UICollectionView *)collectionView
                         atIndexPath:(NSIndexPath *)indexPath
                          withObject:(id)object {
@@ -126,34 +152,32 @@
 
   Class collectionViewCellClass = [self collectionViewCellClassFromObject:object];
 
-  // If this assertion fires then your app is about to crash. You need to either add an explicit
-  // binding in a NICollectionViewCellFactory object or implement the NICollectionViewCellObject protocol on this object and
-  // return a cell class.
-  NIDASSERT(nil != collectionViewCellClass);
-
   if (nil != collectionViewCellClass) {
     cell = [[self class] cellWithClass:collectionViewCellClass collectionView:collectionView indexPath:indexPath object:object];
+
+  } else if ([object respondsToSelector:@selector(collectionViewCellNib)]) {
+    UINib* nib = [object collectionViewCellNib];
+    cell = [[self class] cellWithNib:nib collectionView:collectionView indexPath:indexPath object:object];
   }
-  
+
+  // If this assertion fires then your app is about to crash. You need to either add an explicit
+  // binding in a NICollectionViewCellFactory object or implement the NICollectionViewCellObject
+  // protocol on this object and return a cell class.
+  NIDASSERT(nil != cell);
+
   return cell;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)mapObjectClass:(Class)objectClass toCellClass:(Class)collectionViewCellClass {
   [self.objectToCellMap setObject:collectionViewCellClass forKey:(id<NSCopying>)objectClass];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model {
+- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model {
   id object = [model objectAtIndexPath:indexPath];
   return [self collectionViewCellClassFromObject:object];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-+ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model {
++ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model {
   id object = [model objectAtIndexPath:indexPath];
   Class collectionViewCellClass = nil;
   if ([object respondsToSelector:@selector(collectionViewCellClass)]) {
@@ -165,25 +189,16 @@
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @interface NICollectionViewCellObject()
 @property (nonatomic, assign) Class collectionViewCellClass;
-@property (nonatomic, NI_STRONG) id userInfo;
+@property (nonatomic, strong) id userInfo;
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NICollectionViewCellObject
 
-@synthesize collectionViewCellClass = _collectionViewCellClass;
-@synthesize userInfo = _userInfo;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithCellClass:(Class)collectionViewCellClass userInfo:(id)userInfo {
   if ((self = [super init])) {
     _collectionViewCellClass = collectionViewCellClass;
@@ -192,23 +207,16 @@
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithCellClass:(Class)collectionViewCellClass {
   return [self initWithCellClass:collectionViewCellClass userInfo:nil];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 + (id)objectWithCellClass:(Class)collectionViewCellClass userInfo:(id)userInfo {
   return [[self alloc] initWithCellClass:collectionViewCellClass userInfo:userInfo];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 + (id)objectWithCellClass:(Class)collectionViewCellClass {
   return [[self alloc] initWithCellClass:collectionViewCellClass userInfo:nil];
 }
-
 
 @end

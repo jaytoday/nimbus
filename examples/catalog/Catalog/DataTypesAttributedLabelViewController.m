@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,15 +50,17 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  
+
+  // iOS 7-only.
+  if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+  }
+  self.view.backgroundColor = [UIColor whiteColor];
+
   NIAttributedLabel* label = [[NIAttributedLabel alloc] initWithFrame:CGRectZero];
   label.numberOfLines = 0;
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < NIIOS_6_0
   label.lineBreakMode = NSLineBreakByWordWrapping;
-#else
-  label.lineBreakMode = NSLineBreakByWordWrapping;
-#endif
-  label.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  label.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
   label.frame = CGRectInset(self.view.bounds, 20, 20);
   label.font = [UIFont fontWithName:@"Optima-Regular" size:20];
   label.delegate = self;
@@ -75,10 +77,6 @@
   @"\nMail: 123 Nimbus Ln.";
 
   [self.view addSubview:label];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-  return NIIsSupportedOrientation(interfaceOrientation);
 }
 
 #pragma mark - NIAttributedLabelDelegate
@@ -99,7 +97,7 @@
 
   } else if (NSTextCheckingTypeAddress == result.resultType) {
     // Open the Maps application or Safari if the maps application isn't installed.
-    url = [NSURL URLWithString:[@"http://maps.google.com/maps?q=" stringByAppendingString:[[result.addressComponents objectForKey:NSTextCheckingStreetKey] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    url = [NSURL URLWithString:[@"https://maps.google.com/maps?q=" stringByAppendingString:[[result.addressComponents objectForKey:NSTextCheckingStreetKey] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
   }
 
   if (nil != url) {

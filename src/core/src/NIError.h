@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+API_DEPRECATED_BEGIN("Use NSError instead.", ios(12, API_TO_BE_DEPRECATED))
 /**
  * For defining various error types used throughout the Nimbus framework.
  *
@@ -38,9 +39,7 @@ typedef enum {
 } NINimbusErrorDomainCode;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Errors ///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * <h3>Example</h3>
@@ -52,5 +51,7 @@ typedef enum {
  *                                                               forKey: NIImageErrorKey]];
  * @endcode
  *
- *      @enum NINimbusErrorDomainCode
+ * @enum NINimbusErrorDomainCode
  */
+
+API_DEPRECATED_END

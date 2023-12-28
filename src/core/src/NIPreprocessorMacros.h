@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Forked from Three20 June 10, 2011 - Copyright 2009-2011 Facebook
 //
@@ -19,8 +19,7 @@
 #import <Foundation/Foundation.h>
 
 
-#pragma mark -
-#pragma mark Preprocessor Macros
+#pragma mark - Preprocessor Macros
 
 /**
  * Preprocessor macros are added to Nimbus with care. Macros hide functionality and are difficult
@@ -106,6 +105,19 @@ NI_FIX_CATEGORY_BUG(UIViewController_MyCustomCategory);
 #define __NI_DEPRECATED_METHOD __attribute__((deprecated))
 
 /**
+ * Mark APIs as unavailable in app extensions.
+ *
+ * Use of unavailable methods, classes, or functions produces a compile error when built as part
+ * of an app extension target. If the method, class or function using the unavailable API has also
+ * been marked as unavailable in app extensions, the error will be suppressed.
+ */
+#ifdef NS_EXTENSION_UNAVAILABLE_IOS
+#define NI_EXTENSION_UNAVAILABLE_IOS(msg) NS_EXTENSION_UNAVAILABLE_IOS(msg)
+#else
+#define NI_EXTENSION_UNAVAILABLE_IOS(msg)
+#endif
+
+/**
  * Force a category to be loaded when an app starts up.
  *
  * Add this macro before each category implementation, so we don't have to use
@@ -126,23 +138,4 @@ NI_FIX_CATEGORY_BUG(UIViewController_MyCustomCategory);
  */
 #define RGBACOLOR(r,g,b,a) [UIColor colorWithRed:(r)/255.0f green:(g)/255.0f blue:(b)/255.0f alpha:(a)]
 
-/**
- * A helper macro to keep the interfaces compatiable with pre ARC compilers.
- * Useful when you put nimbus in a library and link it to a GCC LLVM compiler.
- */
-
-#if defined(__has_feature) && __has_feature(objc_arc_weak)
-    #define NI_WEAK weak
-    #define NI_STRONG strong
-#elif defined(__has_feature)  && __has_feature(objc_arc)
-    #define NI_WEAK unsafe_unretained
-    #define NI_STRONG retain
-#else
-    #define NI_WEAK assign
-    #define NI_STRONG retain
-#endif
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Preprocessor Macros //////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,7 +51,11 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.view.backgroundColor = [UIColor underPageBackgroundColor];
+  // iOS 7-only.
+  if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+  }
+  self.view.backgroundColor = [UIColor whiteColor];
 
   // A NINetworkImageView is a subclass of UIImageView. We can provide an image to the initializer
   // and it will be displayed until the network image is loaded. In this example we won't set an
@@ -88,10 +92,6 @@
   [imageView setPathToNetworkImage:@"http://farm5.staticflickr.com/4016/4441744445_97cfbf4519_b_d.jpg"];
 
   [self.view addSubview:imageView];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-  return NIIsSupportedOrientation(interfaceOrientation);
 }
 
 @end

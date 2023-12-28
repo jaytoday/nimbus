@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #import "NINetworkActivity.h"
 
 #import "NIDebuggingTools.h"
+#import "NIPreprocessorMacros.h"
 
 #if defined(DEBUG) || defined(NI_DEBUG)
 #import "NIRuntimeClassModifications.h"
@@ -34,21 +35,18 @@ static pthread_mutex_t  gMutex = PTHREAD_MUTEX_INITIALIZER;
 static const NSTimeInterval kDelayBeforeDisablingActivity = 0.1;
 static NSTimer* gScheduledDelayTimer = nil;
 
+API_UNAVAILABLE(tvos, watchos)
 @interface NINetworkActivity : NSObject
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NINetworkActivity
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // Called after a certain amount of time has passed since all network activity has stopped.
 // By delaying the turnoff of the network activity we avoid "flickering" effects when network
 // activity is starting and stopping rapidly.
-+ (void)disableNetworkActivity {
++ (void)disableNetworkActivity NI_EXTENSION_UNAVAILABLE_IOS("") {
   pthread_mutex_lock(&gMutex);
   if (nil != gScheduledDelayTimer) {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
@@ -57,11 +55,9 @@ static NSTimer* gScheduledDelayTimer = nil;
   pthread_mutex_unlock(&gMutex);
 }
 
-
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void NINetworkActivityTaskDidStart(void) {
   pthread_mutex_lock(&gMutex);
 
@@ -78,8 +74,6 @@ void NINetworkActivityTaskDidStart(void) {
   pthread_mutex_unlock(&gMutex);
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void NINetworkActivityTaskDidFinish(void) {
   pthread_mutex_lock(&gMutex);
 
@@ -108,9 +102,7 @@ void NINetworkActivityTaskDidFinish(void) {
   pthread_mutex_unlock(&gMutex);
 }
 
-
-#pragma mark -
-#pragma mark Network Activity Debugging
+#pragma mark - Network Activity Debugging
 
 #if defined(DEBUG) || defined(NI_DEBUG)
 
@@ -118,12 +110,9 @@ static BOOL gNetworkActivityDebuggingEnabled = NO;
 
 void NISwizzleMethodsForNetworkActivityDebugging(void);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation UIApplication (NimbusNetworkActivityDebugging)
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)nimbusDebugSetNetworkActivityIndicatorVisible:(BOOL)visible {
   // This method will only be used when swizzled, so this will actually call
   // setNetworkActivityIndicatorVisible:
@@ -146,19 +135,15 @@ void NISwizzleMethodsForNetworkActivityDebugging(void);
   }
 }
 
-
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void NISwizzleMethodsForNetworkActivityDebugging(void) {
   NISwapInstanceMethods([UIApplication class],
                         @selector(setNetworkActivityIndicatorVisible:),
                         @selector(nimbusDebugSetNetworkActivityIndicatorVisible:));
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void NIEnableNetworkActivityDebugging(void) {
   if (!gNetworkActivityDebuggingEnabled) {
     gNetworkActivityDebuggingEnabled = YES;
@@ -166,8 +151,6 @@ void NIEnableNetworkActivityDebugging(void) {
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void NIDisableNetworkActivityDebugging(void) {
   if (gNetworkActivityDebuggingEnabled) {
     gNetworkActivityDebuggingEnabled = NO;
@@ -175,20 +158,15 @@ void NIDisableNetworkActivityDebugging(void) {
   }
 }
 
-
 #else // #ifndef DEBUG
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void NIEnableNetworkActivityDebugging(void) {
   // No-op
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 void NIDisableNetworkActivityDebugging(void) {
   // No-op
 }
-
 
 #endif // #if defined(DEBUG) || defined(NI_DEBUG)

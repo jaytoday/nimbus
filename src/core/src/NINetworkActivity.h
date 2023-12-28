@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Forked from Three20 July 2, 2011 - Copyright 2009-2011 Facebook
 //
@@ -17,6 +17,8 @@
 //
 
 #import <Foundation/Foundation.h>
+
+#import "NIPreprocessorMacros.h"
 
 #if defined __cplusplus
 extern "C" {
@@ -41,7 +43,8 @@ extern "C" {
  *
  * This method is threadsafe.
  */
-void NINetworkActivityTaskDidStart(void);
+void NINetworkActivityTaskDidStart(void) NI_EXTENSION_UNAVAILABLE_IOS("")
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * Decrement the number of active network tasks.
@@ -50,7 +53,7 @@ void NINetworkActivityTaskDidStart(void);
  *
  * This method is threadsafe.
  */
-void NINetworkActivityTaskDidFinish(void);
+void NINetworkActivityTaskDidFinish(void) API_UNAVAILABLE(tvos, watchos);
 
 /**
  * @name For Debugging Only
@@ -62,7 +65,7 @@ void NINetworkActivityTaskDidFinish(void);
 /**
  * Enable network activity debugging.
  *
- *      @attention This won't do anything unless the DEBUG preprocessor macro is defined.
+ * @attention This won't do anything unless the DEBUG preprocessor macro is defined.
  *
  * The Nimbus network activity methods will only work correctly if they are the only methods to
  * touch networkActivityIndicatorVisible. If you are using another library that touches
@@ -76,26 +79,24 @@ void NINetworkActivityTaskDidFinish(void);
  *
  * If debugging was previously enabled, this does nothing.
  */
-void NIEnableNetworkActivityDebugging(void);
+void NIEnableNetworkActivityDebugging(void) API_UNAVAILABLE(tvos, watchos);
 
 /**
  * Disable network activity debugging.
  *
- *      @attention This won't do anything unless the DEBUG preprocessor macro is defined.
+ * @attention This won't do anything unless the DEBUG preprocessor macro is defined.
  *
  * When disabled, the networkActivityIndicatorVisible will be restored if this was previously
  * enabled, otherwise this method does nothing.
  *
  * If debugging wasn't previously enabled, this does nothing.
  */
-void NIDisableNetworkActivityDebugging(void);
+void NIDisableNetworkActivityDebugging(void) API_UNAVAILABLE(tvos, watchos);
 
 /**@}*/// End of For Debugging Only
 
 #if defined __cplusplus
-};
+}
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Network Activity /////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////

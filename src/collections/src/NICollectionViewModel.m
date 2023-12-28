@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,18 +24,10 @@
 #error "Nimbus requires ARC support."
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NICollectionViewModel
 
-@synthesize sections = _sections;
-@synthesize sectionIndexTitles = _sectionIndexTitles;
-@synthesize sectionPrefixToSectionIndex = _sectionPrefixToSectionIndex;
-@synthesize delegate = _delegate;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithDelegate:(id<NICollectionViewModelDelegate>)delegate {
   if ((self = [super init])) {
     self.delegate = delegate;
@@ -45,8 +37,6 @@
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithListArray:(NSArray *)listArray delegate:(id<NICollectionViewModelDelegate>)delegate {
   if ((self = [self initWithDelegate:delegate])) {
     [self _compileDataWithListArray:listArray];
@@ -54,8 +44,6 @@
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithSectionedArray:(NSArray *)sectionedArray delegate:(id<NICollectionViewModelDelegate>)delegate {
   if ((self = [self initWithDelegate:delegate])) {
     [self _compileDataWithSectionedArray:sectionedArray];
@@ -63,40 +51,34 @@
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)init {
   return [self initWithDelegate:nil];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-#pragma mark Compiling Data
+#pragma mark - Compiling Data
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)_resetCompiledData {
-  self.sections = nil;
+  [self _setSectionsWithArray:nil];
   self.sectionIndexTitles = nil;
   self.sectionPrefixToSectionIndex = nil;
 }
 
+- (NICollectionViewModelSection *)_sectionFromListArray:(NSArray *)rows {
+  NICollectionViewModelSection* section = [NICollectionViewModelSection section];
+  section.rows = rows;
+  return section;
+}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)_compileDataWithListArray:(NSArray *)listArray {
   [self _resetCompiledData];
 
   if (nil != listArray) {
-    NICollectionViewModelSection* section = [NICollectionViewModelSection section];
-    section.rows = listArray;
-    self.sections = [NSArray arrayWithObject:section];
+    NICollectionViewModelSection* section = [self _sectionFromListArray:listArray];
+    [self _setSectionsWithArray:@[ section ]];
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)_compileDataWithSectionedArray:(NSArray *)sectionedArray {
   [self _resetCompiledData];
 
@@ -155,23 +137,20 @@
   currentSectionRows = nil;
 
   // Update the compiled information for this data source.
-  self.sections = sections;
+  [self _setSectionsWithArray:sections];
 }
 
+- (void)_setSectionsWithArray:(NSArray *)sectionsArray {
+  self.sections = sectionsArray;
+}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-#pragma mark UICollectionViewDataSource
+#pragma mark - UICollectionViewDataSource
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
   return self.sections.count;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
   NIDASSERT((NSUInteger)section < self.sections.count || 0 == self.sections.count);
   if ((NSUInteger)section < self.sections.count) {
@@ -182,8 +161,6 @@
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
   id object = [self objectAtIndexPath:indexPath];
 
@@ -193,8 +170,6 @@
                                  withObject:object];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
   if ([self.delegate respondsToSelector:
        @selector(collectionViewModel:collectionView:viewForSupplementaryElementOfKind:atIndexPath:)]) {
@@ -206,14 +181,31 @@
   return nil;
 }
 
+#pragma mark - UICollectionViewDataSourcePrefetching
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-#pragma mark Public Methods
+- (void)collectionView:(UICollectionView *)collectionView prefetchItemsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths {
+  NSMutableArray<id>* objects = [NSMutableArray array];
+  for (NSIndexPath* indexPath in indexPaths) {
+    id object = [self objectAtIndexPath:indexPath];
+    [objects addObject:object];
+  }
+  
+  [self.delegate collectionViewModel:self collectionView:collectionView prefetchItemsAtIndexPaths:indexPaths withObjects:objects];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView cancelPrefetchingForItemsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths {
+  NSMutableArray<id>* objects = [NSMutableArray array];
+  for (NSIndexPath* indexPath in indexPaths) {
+    id object = [self objectAtIndexPath:indexPath];
+    [objects addObject:object];
+  }
+
+  [self.delegate collectionViewModel:self collectionView:collectionView cancelPrefetchingItemsAtIndexPaths:indexPaths withObjects:objects];
+}
+
+#pragma mark - Public
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)objectAtIndexPath:(NSIndexPath *)indexPath {
   if (nil == indexPath) {
     return nil;
@@ -237,24 +229,47 @@
   return object;
 }
 
+- (NSIndexPath *)indexPathForObject:(id)object {
+  if (nil == object) {
+    return nil;
+  }
+
+  NSArray *sections = self.sections;
+  for (NSUInteger sectionIndex = 0; sectionIndex < [sections count]; sectionIndex++) {
+    NSArray* rows = [[sections objectAtIndex:sectionIndex] rows];
+    for (NSUInteger rowIndex = 0; rowIndex < [rows count]; rowIndex++) {
+      if ([object isEqual:[rows objectAtIndex:rowIndex]]) {
+        return [NSIndexPath indexPathForRow:rowIndex inSection:sectionIndex];
+      }
+    }
+  }
+
+  return nil;
+}
+
+- (NSString *)description {
+  NSMutableString* result = [[super description] mutableCopy];
+  [result appendString:@" sections: \n"];
+  for (NICollectionViewModelSection *section in _sections) {
+    [result appendFormat:@"section headerTitle: %@ footerTitle: %@\n", section.headerTitle, section.footerTitle];
+    [result appendFormat:@"section rows: %@\n", section.rows];
+  }
+
+  [result appendFormat:@"sectionIndexTitles: %@", _sectionIndexTitles];
+  return result;
+}
 
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NICollectionViewModelFooter
 
-@synthesize title = _title;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 + (NICollectionViewModelFooter *)footerWithTitle:(NSString *)title {
   return [[self alloc] initWithTitle:title];
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithTitle:(NSString *)title {
   if ((self = [super init])) {
     self.title = title;
@@ -265,20 +280,12 @@
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NICollectionViewModelSection
 
-@synthesize headerTitle = _headerTitle;
-@synthesize footerTitle = _footerTitle;
-@synthesize rows = _rows;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 + (id)section {
   return [[self alloc] init];
 }
-
 
 @end

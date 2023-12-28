@@ -1,6 +1,6 @@
 //
 // Copyright 2012 Manu Cornet
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,12 +40,11 @@
 static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
 
 @interface VerticalPagingScrollViewController () <NIPagingScrollViewDataSource>
-@property (nonatomic, readwrite, retain) NIPagingScrollView* pagingScrollView;
+@property (nonatomic, retain) NIPagingScrollView* pagingScrollView;
 @end
 
 @implementation VerticalPagingScrollViewController
 
-@synthesize pagingScrollView = _pagingScrollView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
   if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) {
@@ -57,6 +56,10 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  // iOS 7-only.
+  if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+  }
   self.view.backgroundColor = [UIColor blackColor];
 
   self.pagingScrollView = [[NIPagingScrollView alloc] initWithFrame:self.view.bounds];
@@ -64,7 +67,8 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
   // This is the only change from the BasicInstantiation example.
   self.pagingScrollView.type = NIPagingScrollViewVertical;
 
-  self.pagingScrollView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  self.pagingScrollView.autoresizingMask =
+      (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
   self.pagingScrollView.dataSource = self;
   [self.view addSubview:self.pagingScrollView];
   [self.pagingScrollView reloadData];
@@ -76,8 +80,8 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
   [super didReceiveMemoryWarning];
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return NIIsSupportedOrientation(interfaceOrientation);
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return NIIsPad() ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation

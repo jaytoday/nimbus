@@ -1,5 +1,5 @@
 //
-// Copyright 2013 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,14 +17,19 @@
 #import "NICollectionViewModel.h"
 
 /**
- * The NIMutableCollectionViewModel class is a mutable collection view model.
+ * A protocol that declares the interface for a mutable collection view model.
+ *
+ * A default implementation of this protocol is provided with the NIMutableCollectionViewModel
+ * class. If you want to customize the implementation of your collection view model while keeping
+ * the base interface the same, conform to this protocol and implement the declared methods at
+ * minimum.
  *
  * When modifications are made to the model there are two ways to reflect the changes in the
  * collection view.
  *
  * - Call reloadData on the collection view. This is the most destructive way to update the
  *   collection view.
- * - Call insert/delete/reload methods on the collection view with the retuned index path arrays.
+ * - Call insert/delete/reload methods on the collection view with the returned index path arrays.
  *
  * The latter option is the recommended approach to adding new cells to a collection view. Each
  * method in the mutable collection view model returns a data structure that can be used to inform
@@ -42,9 +47,9 @@
  [self.collectionView insertSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
  @endcode
  *
- *      @ingroup TableViewModels
+ * @ingroup CollectionViewModels
  */
-@interface NIMutableCollectionViewModel : NICollectionViewModel
+@protocol NIMutableCollectionViewModeling <NICollectionViewModeling>
 
 - (NSArray *)addObject:(id)object;
 - (NSArray *)addObject:(id)object toSection:(NSUInteger)section;
@@ -58,6 +63,15 @@
 
 @end
 
+/**
+ * A non-mutable collection view model object that provides a lightweight implementation of
+ * the NIMutableCollectionViewModeling protocol.
+ *
+ * @ingroup CollectionViewModels
+ */
+@interface NIMutableCollectionViewModel : NICollectionViewModel <NIMutableCollectionViewModeling>
+@end
+
 /** @name Modifying Objects */
 
 /**
@@ -66,20 +80,20 @@
  * If no sections exist, a section will be created without a title and the object will be added to
  * this new section.
  *
- *      @param object The object to append to the last section.
- *      @returns An array with a single NSIndexPath representing the index path of the new object
+ * @param object The object to append to the last section.
+ * @returns An array with a single NSIndexPath representing the index path of the new object
  *               in the model.
- *      @fn NIMutableCollectionViewModel::addObject:
+ * @fn NIMutableCollectionViewModel::addObject:
  */
 
 /**
  * Appends an object to the end of the given section.
  *
- *      @param object The object to append to the section.
- *      @param section The index of the section to which this object should be appended.
- *      @returns An array with a single NSIndexPath representing the index path of the new object
+ * @param object The object to append to the section.
+ * @param section The index of the section to which this object should be appended.
+ * @returns An array with a single NSIndexPath representing the index path of the new object
  *               in the model.
- *      @fn NIMutableCollectionViewModel::addObject:toSection:
+ * @fn NIMutableCollectionViewModel::addObject:toSection:
  */
 
 /**
@@ -88,21 +102,21 @@
  * If no section exists, a section will be created without a title and the objects will be added to
  * this new section.
  *
- *      @param array The array of objects to append to the last section.
- *      @returns An array of NSIndexPath objects representing the index paths of the objects in the
+ * @param array The array of objects to append to the last section.
+ * @returns An array of NSIndexPath objects representing the index paths of the objects in the
  *               model.
- *      @fn NIMutableCollectionViewModel::addObjectsFromArray:
+ * @fn NIMutableCollectionViewModel::addObjectsFromArray:
  */
 
 /**
  * Inserts an object into the given section at the given row.
  *
- *      @param object The object to append to the section.
- *      @param row The row within the section at which to insert the object.
- *      @param section The index of the section in which the object should be inserted.
- *      @returns An array with a single NSIndexPath representing the index path of the new object
+ * @param object The object to append to the section.
+ * @param row The row within the section at which to insert the object.
+ * @param section The index of the section in which the object should be inserted.
+ * @returns An array with a single NSIndexPath representing the index path of the new object
  *               in the model.
- *      @fn NIMutableCollectionViewModel::insertObject:atRow:inSection:
+ * @fn NIMutableCollectionViewModel::insertObject:atRow:inSection:
  */
 
 /**
@@ -111,10 +125,10 @@
  * If the index path does not represent a valid object then a debug assertion will fire and the
  * method will return nil without removing any object.
  *
- *      @param indexPath The index path at which to remove a single object.
- *      @returns An array with a single NSIndexPath representing the index path of the object that
+ * @param indexPath The index path at which to remove a single object.
+ * @returns An array with a single NSIndexPath representing the index path of the object that
  *               was removed from the model, or nil if no object exists at the given index path.
- *      @fn NIMutableCollectionViewModel::removeObjectAtIndexPath:
+ * @fn NIMutableCollectionViewModel::removeObjectAtIndexPath:
  */
 
 /** @name Modifying Sections */
@@ -122,34 +136,24 @@
 /**
  * Appends a section with a given title to the model.
  *
- *      @param title The title of the new section.
- *      @returns An index set with a single index representing the index of the new section.
- *      @fn NIMutableCollectionViewModel::addSectionWithTitle:
+ * @param title The title of the new section.
+ * @returns An index set with a single index representing the index of the new section.
+ * @fn NIMutableCollectionViewModel::addSectionWithTitle:
  */
 
 /**
  * Inserts a section with a given title to the model at the given index.
  *
- *      @param title The title of the new section.
- *      @param index The index in the model at which to add the new section.
- *      @returns An index set with a single index representing the index of the new section.
- *      @fn NIMutableCollectionViewModel::insertSectionWithTitle:atIndex:
+ * @param title The title of the new section.
+ * @param index The index in the model at which to add the new section.
+ * @returns An index set with a single index representing the index of the new section.
+ * @fn NIMutableCollectionViewModel::insertSectionWithTitle:atIndex:
  */
 
 /**
  * Removes a section at the given index.
  *
- *      @param index The index in the model of the section to remove.
- *      @returns An index set with a single index representing the index of the removed section.
- *      @fn NIMutableCollectionViewModel::removeSectionAtIndex:
- */
-
-/** @name Updating the Section Index */
-
-/**
- * Updates the section index with the current section index settings.
- *
- * This method should be called after modifying the model if a section index is being used.
- *
- *      @fn NIMutableCollectionViewModel::updateSectionIndex
+ * @param index The index in the model of the section to remove.
+ * @returns An index set with a single index representing the index of the removed section.
+ * @fn NIMutableCollectionViewModel::removeSectionAtIndex:
  */

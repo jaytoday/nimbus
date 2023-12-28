@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Forked from Three20 June 10, 2011 - Copyright 2009-2011 Facebook
 //
@@ -18,6 +18,8 @@
 
 #import <Foundation/Foundation.h>
 
+API_DEPRECATED_BEGIN("Avoid swizzling unless absolutely needed.", ios(12, API_TO_BE_DEPRECATED))
+
 #if defined __cplusplus
 extern "C" {
 #endif
@@ -29,7 +31,7 @@ extern "C" {
  * @defgroup Runtime-Class-Modifications Runtime Class Modifications
  * @{
  *
- *      @attention Please use caution when modifying class implementations at runtime.
+ * @attention Please use caution when modifying class implementations at runtime.
  *                 Apple is prone to rejecting apps for gratuitous use of method swapping.
  *                 In particular, avoid swapping any NSObject methods such as dealloc, init,
  *                 and retain/release on UIKit classes.
@@ -68,9 +70,9 @@ void NISwapInstanceMethods(Class cls, SEL originalSel, SEL newSel);
 void NISwapClassMethods(Class cls, SEL originalSel, SEL newSel);
 
 #if defined __cplusplus
-};
+}
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Runtime Class Modifications //////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+API_DEPRECATED_END

@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import "NIPreprocessorMacros.h"
+
+API_DEPRECATED_BEGIN("Use equivalent UIKit APIs instead.", ios(12, API_TO_BE_DEPRECATED))
+
 #if defined __cplusplus
 extern "C" {
 #endif
@@ -24,19 +28,17 @@ extern "C" {
 /**
  * For common system metrics.
  *
- * If you ever need to work with system metrics in any way it can be a pain in the ass to try
- * to figure out what the exact metrics are. Figuring out how long it takes the status bar
- * to animate is not something you should be spending your time on. The metrics in this file
- * are provided as a means of unifying a number of system metrics for use in your applications.
- *
+ * If you work with system metrics in any way it can be a pain in the ass to figure out what the
+ * exact metrics are. Figuring out how long it takes the status bar to animate is not something you
+ * should be spending your time on. The metrics in this file are provided as a means of unifying a
+ * number of system metrics for use in your applications.
  *
  * <h2>What Qualifies as a Common Metric</h2>
  *
- * Common metrics are related to system components, such as the dimensions of a toolbar in
+ * Common metrics are system components, such as the dimensions of a toolbar in
  * a particular orientation or the duration of a standard animation. This is
  * not the place to put feature-specific metrics, such as the height of a photo scrubber
  * view.
- *
  *
  * <h2>Examples</h2>
  *
@@ -47,11 +49,10 @@ extern "C" {
  * is slightly shorter to accomodate the smaller height of the screen.
  *
  * @code
- * - (void)willAnimateRotationToInterfaceOrientation: (UIInterfaceOrientation)toInterfaceOrientation
- *                                          duration: (NSTimeInterval)duration {
- *   [super willAnimateRotationToInterfaceOrientation: toInterfaceOrientation
- *                                           duration: duration];
- * 
+ * - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+ *                                          duration:(NSTimeInterval)duration {
+ *   [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
+ *
  *   CGRect toolbarFrame = self.toolbar.frame;
  *   toolbarFrame.size.height = NIToolbarHeightForOrientation(toInterfaceOrientation);
  *   toolbarFrame.origin.y = self.view.bounds.size.height - toolbarFrame.size.height;
@@ -59,39 +60,18 @@ extern "C" {
  * }
  * @endcode
  *
- *      @ingroup NimbusCore
- *      @defgroup Common-Metrics Common Metrics
- *      @{
+ * @ingroup NimbusCore
+ * @defgroup Common-Metrics Common Metrics
+ * @{
  */
-
-#ifndef UIViewAutoresizingFlexibleMargins
-#define UIViewAutoresizingFlexibleMargins (UIViewAutoresizingFlexibleLeftMargin \
-                                           | UIViewAutoresizingFlexibleTopMargin \
-                                           | UIViewAutoresizingFlexibleRightMargin \
-                                           | UIViewAutoresizingFlexibleBottomMargin)
-#endif
-
-#ifndef UIViewAutoresizingFlexibleDimensions
-#define UIViewAutoresizingFlexibleDimensions (UIViewAutoresizingFlexibleWidth \
-                                              | UIViewAutoresizingFlexibleHeight)
-#endif
-
-#ifndef UIViewAutoresizingNavigationBar
-#define UIViewAutoresizingNavigationBar (UIViewAutoresizingFlexibleWidth \
-                                         | UIViewAutoresizingFlexibleBottomMargin)
-#endif
-
-#ifndef UIViewAutoresizingToolbar
-#define UIViewAutoresizingToolbar (UIViewAutoresizingFlexibleWidth \
-                                   | UIViewAutoresizingFlexibleTopMargin)
-#endif
 
 /**
  * The recommended number of points for a minimum tappable area.
  *
  * Value: 44
  */
-CGFloat NIMinimumTapDimension(void);
+CGFloat NIMinimumTapDimension(void)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * Fetch the height of a toolbar in a given orientation.
@@ -102,7 +82,8 @@ CGFloat NIMinimumTapDimension(void);
  *
  * On the iPad: always 44
  */
-CGFloat NIToolbarHeightForOrientation(UIInterfaceOrientation orientation);
+CGFloat NIToolbarHeightForOrientation(UIInterfaceOrientation orientation)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * The animation curve used when changing the status bar's visibility.
@@ -112,7 +93,8 @@ CGFloat NIToolbarHeightForOrientation(UIInterfaceOrientation orientation);
  *
  * Value: UIViewAnimationCurveEaseIn
  */
-UIViewAnimationCurve NIStatusBarAnimationCurve(void);
+UIViewAnimationCurve NIStatusBarAnimationCurve(void)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * The animation duration used when changing the status bar's visibility.
@@ -122,7 +104,8 @@ UIViewAnimationCurve NIStatusBarAnimationCurve(void);
  *
  * Value: 0.3 seconds
  */
-NSTimeInterval NIStatusBarAnimationDuration(void);
+NSTimeInterval NIStatusBarAnimationDuration(void)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * The animation curve used when the status bar's bounds change (when a call is received,
@@ -130,7 +113,8 @@ NSTimeInterval NIStatusBarAnimationDuration(void);
  *
  * Value: UIViewAnimationCurveEaseInOut
  */
-UIViewAnimationCurve NIStatusBarBoundsChangeAnimationCurve(void);
+UIViewAnimationCurve NIStatusBarBoundsChangeAnimationCurve(void)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * The animation duration used when the status bar's bounds change (when a call is received,
@@ -138,7 +122,8 @@ UIViewAnimationCurve NIStatusBarBoundsChangeAnimationCurve(void);
  *
  * Value: 0.35 seconds
  */
-NSTimeInterval NIStatusBarBoundsChangeAnimationDuration(void);
+NSTimeInterval NIStatusBarBoundsChangeAnimationDuration(void)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * Get the status bar's current height.
@@ -147,7 +132,8 @@ NSTimeInterval NIStatusBarBoundsChangeAnimationDuration(void);
  *
  * This is generally 20 when the status bar is its normal height.
  */
-CGFloat NIStatusBarHeight(void);
+CGFloat NIStatusBarHeight(void) NI_EXTENSION_UNAVAILABLE_IOS("")
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * The animation duration when the device is rotating to a new orientation.
@@ -155,21 +141,23 @@ CGFloat NIStatusBarHeight(void);
  * Value: 0.4 seconds if the device is being rotated 90 degrees.
  *        0.8 seconds if the device is being rotated 180 degrees.
  *
- *      @param isFlippingUpsideDown YES if the device is being flipped upside down.
+ * @param isFlippingUpsideDown YES if the device is being flipped upside down.
  */
-NSTimeInterval NIDeviceRotationDuration(BOOL isFlippingUpsideDown);
+NSTimeInterval NIDeviceRotationDuration(BOOL isFlippingUpsideDown)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * The padding around a standard cell in a table view.
  *
  * Value: 10 pixels on all sides.
  */
-UIEdgeInsets NICellContentPadding(void);
+UIEdgeInsets NICellContentPadding(void)
+    API_UNAVAILABLE(tvos, watchos);
 
 #if defined __cplusplus
-};
+}
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Common Metrics ///////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+API_DEPRECATED_END

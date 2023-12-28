@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "NIPreprocessorMacros.h" /* for NI_WEAK */
+#import "NIActions.h"  /* for NIActionsDataSource */
+#import "NIPreprocessorMacros.h" /* for weak */
+
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
 
 @protocol NICollectionViewModelDelegate;
 
@@ -28,10 +34,33 @@
 @class NICollectionViewModelFooter;  // Provides the information for a footer.
 
 /**
- * A non-mutable collection view model that complies to the UICollectionViewDataSource protocol.
+ * A protocol that declares the interface for a non-mutable collection view model.
  *
- * This model allows you to easily create a data source for a UICollectionView without having to
- * implement the UICollectionViewDataSource methods in your controller.
+ * A default implementation of this protocol is provided with the NICollectionViewModel class.
+ * If you want to customize the implementation of your collection view model while keeping the base
+ * interface the same, conform to this protocol and implement the declared methods at minimum.
+ *
+ * The model class that conforms to this protocol is intended to allow you to easily create a data
+ * source for a UICollectionView without having to implement the UICollectionViewDataSource methods
+ * in your controller.
+ *
+ * @ingroup CollectionViewModels
+ */
+@protocol NICollectionViewModeling <NIActionsDataSource, UICollectionViewDataSource, UICollectionViewDataSourcePrefetching>
+
+#pragma mark Accessing Objects
+
+- (nullable NSIndexPath *)indexPathForObject:(nonnull id)object;
+
+#pragma mark Creating Collection View Cells
+
+@property (nonatomic, weak, nullable) id<NICollectionViewModelDelegate> delegate;
+
+@end
+
+/**
+ * A non-mutable collection view model object that provides a lightweight implementation of
+ * the NICollectionViewModeling protocol.
  *
  * This base class is non-mutable, much like an NSArray. You must initialize this model with
  * the contents when you create it.
@@ -39,32 +68,26 @@
  * This model simply manages the data relationship with your collection view. It is up to you to
  * implement the collection view's layout object.
  *
- *      @ingroup CollectionViewModels
+ * @ingroup CollectionViewModels
  */
-@interface NICollectionViewModel : NSObject <UICollectionViewDataSource>
+@interface NICollectionViewModel : NSObject <NICollectionViewModeling>
 
-#pragma mark Creating Collection View Models
+- (nonnull id)initWithDelegate:(nullable id<NICollectionViewModelDelegate>)delegate NS_DESIGNATED_INITIALIZER;
 
-// Designated initializer.
-- (id)initWithDelegate:(id<NICollectionViewModelDelegate>)delegate;
-- (id)initWithListArray:(NSArray *)listArray delegate:(id<NICollectionViewModelDelegate>)delegate;
+- (nonnull id)initWithListArray:(nonnull NSArray *)listArray delegate:(nullable id<NICollectionViewModelDelegate>)delegate;
+
 // Each NSString in the array starts a new section. Any other object is a new row (with exception of certain model-specific objects).
-- (id)initWithSectionedArray:(NSArray *)sectionedArray delegate:(id<NICollectionViewModelDelegate>)delegate;
+- (nonnull id)initWithSectionedArray:(nonnull NSArray *)sectionedArray delegate:(nullable id<NICollectionViewModelDelegate>)delegate;
 
-#pragma mark Accessing Objects
-
-- (id)objectAtIndexPath:(NSIndexPath *)indexPath;
-
-#pragma mark Creating Collection View Cells
-
-@property (nonatomic, NI_WEAK) id<NICollectionViewModelDelegate> delegate;
+// Redeclaring for property autosynthesis.
+@property (nonatomic, weak, nullable) id<NICollectionViewModelDelegate> delegate;
 
 @end
 
 /**
  * A protocol for NICollectionViewModel to fetch rows to be displayed for the collection view.
  *
- *      @ingroup CollectionViewModels
+ * @ingroup CollectionViewModels
  */
 @protocol NICollectionViewModelDelegate <NSObject>
 @required
@@ -74,10 +97,10 @@
  *
  * The implementation of this method will generally use object to customize the cell.
  */
-- (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
-                        cellForCollectionView:(UICollectionView *)collectionView
-                                  atIndexPath:(NSIndexPath *)indexPath
-                                   withObject:(id)object;
+- (nonnull UICollectionViewCell *)collectionViewModel:(nonnull id<NICollectionViewModeling>)collectionViewModel
+                                cellForCollectionView:(nonnull UICollectionView *)collectionView
+                                          atIndexPath:(nonnull NSIndexPath *)indexPath
+                                           withObject:(nonnull id)object;
 
 @optional
 
@@ -87,10 +110,26 @@
  * The value of the kind property and indexPath are implementation-dependent
  * based on the type of UICollectionViewLayout being used.
  */
-- (UICollectionReusableView *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
-                                   collectionView:(UICollectionView *)collectionView
-                viewForSupplementaryElementOfKind:(NSString *)kind
-                                      atIndexPath:(NSIndexPath *)indexPath;
+- (nonnull UICollectionReusableView *)collectionViewModel:(nonnull id<NICollectionViewModeling>)collectionViewModel
+                                           collectionView:(nonnull UICollectionView *)collectionView
+                        viewForSupplementaryElementOfKind:(nonnull NSString *)kind
+                                              atIndexPath:(nonnull NSIndexPath *)indexPath;
+
+/**
+ * Prefetch one or more collection view cells at given index paths with given objects.
+ */
+- (void)collectionViewModel:(nonnull id<NICollectionViewModeling>)collectionViewModel
+               collectionView:(nonnull UICollectionView *)collectionView
+    prefetchItemsAtIndexPaths:(nonnull NSArray<NSIndexPath *> *)indexPaths
+                  withObjects:(nonnull NSArray<id> *)objects NS_AVAILABLE_IOS(10_0);
+
+/**
+ * Cancel the running prefetching task for one or more collection view cells at given index paths with given objects.
+ */
+- (void)collectionViewModel:(nonnull id<NICollectionViewModeling>)collectionViewModel
+                        collectionView:(nonnull UICollectionView *)collectionView
+    cancelPrefetchingItemsAtIndexPaths:(nonnull NSArray<NSIndexPath *> *)indexPaths
+                           withObjects:(nonnull NSArray<id> *)objects NS_AVAILABLE_IOS(10_0);
 
 @end
 
@@ -107,10 +146,10 @@
  */
 @interface NICollectionViewModelFooter : NSObject
 
-+ (id)footerWithTitle:(NSString *)title;
-- (id)initWithTitle:(NSString *)title;
++ (nonnull id)footerWithTitle:(nonnull NSString *)title;
+- (nonnull id)initWithTitle:(nonnull NSString *)title;
 
-@property (nonatomic, copy) NSString* title;
+@property (nonatomic, copy, nonnull) NSString* title;
 
 @end
 
@@ -121,7 +160,7 @@
  *
  * This method can be used to create an empty model.
  *
- *      @fn NICollectionViewModel::initWithDelegate:
+ * @fn NICollectionViewModel::initWithDelegate:
  */
 
 /**
@@ -142,7 +181,7 @@
  * [[NICollectionViewModel alloc] initWithListArray:contents delegate:self];
  * @endcode
  *
- *      @fn NICollectionViewModel::initWithListArray:delegate:
+ * @fn NICollectionViewModel::initWithListArray:delegate:
  */
 
 /**
@@ -169,7 +208,7 @@
  * [[NICollectionViewModel alloc] initWithSectionedArray:contents delegate:self];
  * @endcode
  *
- *      @fn NICollectionViewModel::initWithSectionedArray:delegate:
+ * @fn NICollectionViewModel::initWithSectionedArray:delegate:
  */
 
 
@@ -181,7 +220,15 @@
  * If no object exists at the given index path (an invalid index path, for example) then nil
  * will be returned.
  *
- *      @fn NICollectionViewModel::objectAtIndexPath:
+ * @fn NICollectionViewModel::objectAtIndexPath:
+ */
+
+/**
+ * Returns the index path of the given object within the model.
+ *
+ * If the model does not contain the object then nil will be returned.
+ *
+ * @fn NICollectionViewModel::indexPathForObject:
  */
 
 
@@ -190,5 +237,7 @@
 /**
  * A delegate used to fetch collection view cells for the data source.
  *
- *      @fn NICollectionViewModel::delegate
+ * @fn NICollectionViewModel::delegate
  */
+
+API_DEPRECATED_END

@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,11 @@
 #import <UIKit/UIKit.h>
 
 #import "NICollectionViewModel.h"
+
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
 
 /**
  * A simple factory for creating collection view cells from objects.
@@ -38,7 +43,7 @@
  * protocol on an object outweighs the benefit of using the factory, i.e. when you want to map
  * simple types such as NSString to cells.
  *
- *      @ingroup CollectionViewCellFactory
+ * @ingroup CollectionViewCellFactory
  */
 @interface NICollectionViewCellFactory : NSObject <NICollectionViewModelDelegate>
 
@@ -59,7 +64,7 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * the object to a cell it will return nil.
  *
  * @code
-- (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel
+- (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel
                         cellForCollectionView:(UICollectionView *)collectionView
                                   atIndexPath:(NSIndexPath *)indexPath
                                    withObject:(id)object {
@@ -74,7 +79,7 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
 }
  * @endcode
  */
-+ (UICollectionViewCell *)collectionViewModel:(NICollectionViewModel *)collectionViewModel cellForCollectionView:(UICollectionView *)collectionView atIndexPath:(NSIndexPath *)indexPath withObject:(id)object;
++ (UICollectionViewCell *)collectionViewModel:(id<NICollectionViewModeling>)collectionViewModel cellForCollectionView:(UICollectionView *)collectionView atIndexPath:(NSIndexPath *)indexPath withObject:(id)object;
 
 /**
  * Map an object's class to a cell's class.
@@ -94,7 +99,7 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * can fetch the cell class and then perform any selectors that are necessary for calculating the
  * dimensions of the cell before it is instantiated.
  */
-- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model;
+- (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model;
 
 /**
  * Returns the mapped cell class for an object at a given index path.
@@ -103,14 +108,14 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * can fetch the cell class and then perform any selectors that are necessary for calculating the
  * dimensions of the cell before it is instantiated.
  */
-+ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(NICollectionViewModel *)model;
++ (Class)collectionViewCellClassForItemAtIndexPath:(NSIndexPath *)indexPath model:(id<NICollectionViewModeling>)model;
 
 @end
 
 /**
  * The protocol for an object that can be used in the NICollectionViewCellFactory.
  *
- *      @ingroup CollectionViewCellFactory
+ * @ingroup CollectionViewCellFactory
  */
 @protocol NICollectionViewCellObject <NSObject>
 @required
@@ -121,13 +126,27 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
 @end
 
 /**
+ * The protocol for an object that can be used in the NICollectionViewCellFactory with Interface
+ * Builder nibs.
+ *
+ * @ingroup CollectionViewCellFactory
+ */
+@protocol NICollectionViewNibCellObject <NSObject>
+@required
+
+/** A nib that contains a collection view cell to display this object's contents. */
+- (UINib *)collectionViewCellNib;
+
+@end
+
+/**
  * The protocol for a cell created in the NICollectionViewCellFactory.
  *
  * Cells that implement this protocol are given the object that implemented the
  * NICollectionViewCellObject protocol and returned this cell's class name in
  * @link NICollectionViewCellObject::collectionViewCellClass collectionViewCellClass@endlink.
  *
- *      @ingroup CollectionViewCellFactory
+ * @ingroup CollectionViewCellFactory
  */
 @protocol NICollectionViewCell <NSObject>
 @required
@@ -149,6 +168,27 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
  * objects.
  */
 + (BOOL)shouldAppendObjectClassToReuseIdentifier;
+
+@end
+
+/**
+ * A protocol that objects may conform to in order to provide a custom suffix to the reuse
+ * identifier of its cell.
+ *
+ * This is useful for objects that can support different configurations, such that cells updated
+ * with an instance of the object can be reused only for objects supporting the same configuration.
+ * This can be used as an optimization for objects that support dynamic configurations that would be
+ * inefficient to reset during -prepareForReuse.
+ */
+@protocol NICollectionViewCellReuseIdentifierExtension <NSObject>
+
+/**
+ * A unique reuse identifier suffix to append to the reuse identifier of the cell.
+ *
+ * @note Classes conforming to this protocol may return nil or the empty string to opt out of the
+ * suffix.
+ */
+- (NSString *)reuseIdentifierSuffix;
 
 @end
 
@@ -175,12 +215,14 @@ _model.delegate = (id)[NICollectionViewCellFactory class];
 + (id)objectWithCellClass:(Class)collectionViewCellClass userInfo:(id)userInfo;
 + (id)objectWithCellClass:(Class)collectionViewCellClass;
 
-@property (nonatomic, readonly, NI_STRONG) id userInfo;
+@property (nonatomic, readonly, strong) id userInfo;
 
 @end
 
 /**
  * An object that can be used to populate information in the cell.
  *
- *      @fn NICollectionViewCellObject::userInfo
+ * @fn NICollectionViewCellObject::userInfo
  */
+
+API_DEPRECATED_END

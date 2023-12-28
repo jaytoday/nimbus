@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,20 +21,13 @@
 #import "NimbusCore.h"
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NIMutableTableViewModel
 
-@synthesize delegate = _delegate;
+@dynamic delegate;
+
+#pragma mark - Public
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark - Public Methods
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSArray *)addObject:(id)object {
   NITableViewModelSection* section = self.sections.count == 0 ? [self _appendSection] : self.sections.lastObject;
   [section.mutableRows addObject:object];
@@ -42,8 +35,6 @@
                                                      inSection:self.sections.count - 1]];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSArray *)addObject:(id)object toSection:(NSUInteger)sectionIndex {
   NIDASSERT(sectionIndex >= 0 && sectionIndex < self.sections.count);
   NITableViewModelSection *section = [self.sections objectAtIndex:sectionIndex];
@@ -52,8 +43,6 @@
                                                      inSection:sectionIndex]];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSArray *)addObjectsFromArray:(NSArray *)array {
   NSMutableArray* indices = [NSMutableArray array];
   for (id object in array) {
@@ -62,8 +51,6 @@
   return indices;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSArray *)insertObject:(id)object atRow:(NSUInteger)row inSection:(NSUInteger)sectionIndex {
   NIDASSERT(sectionIndex >= 0 && sectionIndex < self.sections.count);
   NITableViewModelSection *section = [self.sections objectAtIndex:sectionIndex];
@@ -71,8 +58,6 @@
   return [NSArray arrayWithObject:[NSIndexPath indexPathForRow:row inSection:sectionIndex]];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSArray *)removeObjectAtIndexPath:(NSIndexPath *)indexPath {
   NIDASSERT(indexPath.section < (NSInteger)self.sections.count);
   if (indexPath.section >= (NSInteger)self.sections.count) {
@@ -87,46 +72,34 @@
   return [NSArray arrayWithObject:indexPath];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSIndexSet *)addSectionWithTitle:(NSString *)title {
   NITableViewModelSection* section = [self _appendSection];
   section.headerTitle = title;
   return [NSIndexSet indexSetWithIndex:self.sections.count - 1];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSIndexSet *)insertSectionWithTitle:(NSString *)title atIndex:(NSUInteger)index {
   NITableViewModelSection* section = [self _insertSectionAtIndex:index];
   section.headerTitle = title;
   return [NSIndexSet indexSetWithIndex:index];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSIndexSet *)removeSectionAtIndex:(NSUInteger)index {
   NIDASSERT(index >= 0 && index < self.sections.count);
   [self.sections removeObjectAtIndex:index];
   return [NSIndexSet indexSetWithIndex:index];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)updateSectionIndex {
   [self _compileSectionIndex];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark - Private Methods
+#pragma mark - Private
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NITableViewModelSection *)_appendSection {
   if (nil == self.sections) {
-    self.sections = [NSMutableArray array];
+    [self _setSectionsWithArray:[NSMutableArray array]];
   }
   NITableViewModelSection* section = nil;
   section = [[NITableViewModelSection alloc] init];
@@ -135,11 +108,9 @@
   return section;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NITableViewModelSection *)_insertSectionAtIndex:(NSUInteger)index {
   if (nil == self.sections) {
-    self.sections = [NSMutableArray array];
+    [self _setSectionsWithArray:[NSMutableArray array]];
   }
   NITableViewModelSection* section = nil;
   section = [[NITableViewModelSection alloc] init];
@@ -149,13 +120,17 @@
   return section;
 }
 
+- (void)_setSectionsWithArray:(NSArray *)sectionsArray {
+  if ([sectionsArray isKindOfClass:[NSMutableArray class]]) {
+    self.sections = (NSMutableArray *)sectionsArray;
+  } else {
+    self.sections = [sectionsArray mutableCopy];
+  }
+}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - UITableViewDataSource
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
   if ([self.delegate respondsToSelector:@selector(tableViewModel:canEditObject:atIndexPath:inTableView:)]) {
     id object = [self objectAtIndexPath:indexPath];
@@ -165,8 +140,6 @@
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
   id object = [self objectAtIndexPath:indexPath];
   if (editingStyle == UITableViewCellEditingStyleDelete) {
@@ -185,8 +158,6 @@
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
   if ([self.delegate respondsToSelector:@selector(tableViewModel:canMoveObject:atIndexPath:inTableView:)]) {
     id object = [self objectAtIndexPath:indexPath];
@@ -196,8 +167,6 @@
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath {
   id object = [self objectAtIndexPath:sourceIndexPath];
   BOOL shouldMove = YES;
@@ -213,13 +182,9 @@
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NITableViewModelSection (Mutable)
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSMutableArray *)mutableRows {
   NIDASSERT([self.rows isKindOfClass:[NSMutableArray class]] || nil == self.rows);
     

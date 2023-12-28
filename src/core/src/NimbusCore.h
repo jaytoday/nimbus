@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,74 +49,27 @@
  *
  * Great care must be taken to ensure that Nimbus doesn't become a framework composed of
  * hundreds of miniscule libraries.
- * 
- * <h2>Common autoresizing masks</h2>
- * 
- * Nimbus provides the following macros: UIViewAutoresizingFlexibleMargins,
- * UIViewAutoresizingFlexibleDimensions, UIViewAutoresizingNavigationBar, and
- * UIViewAutoresizingToolbarBar.
- * 
-@code
-// Create a view that fills its superview's bounds.
-UIView* contentView = [[UIView alloc] initWithFrame:self.view.bounds];
-contentView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
-[self.view addSubview:contentView];
-
-// Create a view that is always centered in the superview's bounds.
-UIView* centeredView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
-centeredView.autoresizingMask = UIViewAutoresizingFlexibleMargins;
-// Center the view within the superview however you choose.
-[self.view addSubview:centeredView];
-
-// Create a navigation bar that stays fixed to the top.
-UINavigationBar* navBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
-[navBar sizeToFit];
-navBar.autoresizingMask = UIViewAutoresizingNavigationBar;
-[self.view addSubview:navBar];
-
-// Create a toolbar that stays fixed to the bottom.
-UIToolbar* toolBar = [[UIToolbar alloc] initWithFrame:CGRectZero];
-[toolBar sizeToFit];
-toolBar.autoresizingMask = UIViewAutoresizingToolbarBar;
-[self.view addSubview:toolBar];
-@endcode
- * 
- * <h3>Why they exist</h3>
- * 
- * Using the existing UIViewAutoresizing flags can be tedious for common flags.
- * 
- * For example, to make a view have flexible margins you would need to write four flags:
- * 
-@code
-view.autoresizingMask = (UIViewAutoresizingFlexibleLeftMargin
-                         | UIViewAutoresizingFlexibleTopMargin
-                         | UIViewAutoresizingFlexibleRightMargin
-                         | UIViewAutoresizingFlexibleBottomMargin);
-@endcode
  */
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "NIActions.h"
-#import "NIButtonUtilities.h"
-#import "NICommonMetrics.h"
-#import "NIDataStructures.h"
-#import "NIDebuggingTools.h"
-#import "NIDeviceOrientation.h"
-#import "NIError.h"
-#import "NIFoundationMethods.h"
-#import "NIImageUtilities.h"
-#import "NIInMemoryCache.h"
-#import "NINavigationAppearance.h"
-#import "NINetworkActivity.h"
-#import "NINonEmptyCollectionTesting.h"
-#import "NINonRetainingCollections.h"
-#import "NIOperations.h"
-#import "NIPaths.h"
-#import "NIPreprocessorMacros.h"
-#import "NIRuntimeClassModifications.h"
-#import "NISDKAvailability.h"
-#import "NISnapshotRotation.h"
-#import "NIState.h"
-#import "NIViewRecycler.h"
+#import "NIActions.h"  // IWYU pragma: export
+#import "NIButtonUtilities.h"  // IWYU pragma: export
+#import "NICommonMetrics.h"  // IWYU pragma: export
+#import "NIDebuggingTools.h"  // IWYU pragma: export
+#import "NIDeviceOrientation.h"  // IWYU pragma: export
+#import "NIError.h"  // IWYU pragma: export
+#import "NIFoundationMethods.h"  // IWYU pragma: export
+#import "NIImageUtilities.h"  // IWYU pragma: export
+#import "NIInMemoryCache.h"  // IWYU pragma: export
+#import "NINetworkActivity.h"  // IWYU pragma: export
+#import "NINonEmptyCollectionTesting.h"  // IWYU pragma: export
+#import "NINonRetainingCollections.h"  // IWYU pragma: export
+#import "NIPaths.h"  // IWYU pragma: export
+#import "NIPreprocessorMacros.h"  // IWYU pragma: export
+#import "NIRuntimeClassModifications.h"  // IWYU pragma: export
+#import "NISDKAvailability.h"  // IWYU pragma: export
+#import "NISnapshotRotation.h"  // IWYU pragma: export
+#import "NIState.h"  // IWYU pragma: export
+#import "NIViewRecycler.h"  // IWYU pragma: export

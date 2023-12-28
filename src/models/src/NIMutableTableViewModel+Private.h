@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,12 +15,18 @@
 //
 
 #import "NIMutableTableViewModel.h"
+#import "NITableViewModel+Private.h"
+
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
 
 @interface NIMutableTableViewModel (Private)
 
-@property (nonatomic, NI_STRONG) NSMutableArray* sections; // Array of NITableViewModelSection
-@property (nonatomic, NI_STRONG) NSMutableArray* sectionIndexTitles;
-@property (nonatomic, NI_STRONG) NSMutableDictionary* sectionPrefixToSectionIndex;
+@property (nonatomic, strong) NSMutableArray* sections; // Array of NITableViewModelSection
+@property (nonatomic, strong) NSMutableArray* sectionIndexTitles;
+@property (nonatomic, strong) NSMutableDictionary* sectionPrefixToSectionIndex;
 
 @end
 
@@ -29,3 +35,5 @@
 - (NSMutableArray *)mutableRows;
 
 @end
+
+API_DEPRECATED_END

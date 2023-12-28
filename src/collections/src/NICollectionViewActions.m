@@ -1,5 +1,5 @@
 //
-// Copyright 2013 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,25 +25,17 @@
 #error "Nimbus requires ARC support."
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NICollectionViewActions
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - UICollectionViewDelegate
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
   BOOL shouldHighlight = NO;
 
-  NIDASSERT([collectionView.dataSource isKindOfClass:[NICollectionViewModel class]]);
-  if ([collectionView.dataSource isKindOfClass:[NICollectionViewModel class]]) {
-    NICollectionViewModel* model = (NICollectionViewModel *)collectionView.dataSource;
-    id object = [model objectAtIndexPath:indexPath];
+  NIDASSERT([collectionView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]);
+  if ([collectionView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]) {
+    id object = [(id<NIActionsDataSource>)collectionView.dataSource objectAtIndexPath:indexPath];
 
     if ([self isObjectActionable:object]) {
       NIObjectActions* action = [self actionForObjectOrClassOfObject:object];
@@ -60,13 +52,10 @@
   return shouldHighlight;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-  NIDASSERT([collectionView.dataSource isKindOfClass:[NICollectionViewModel class]]);
-  if ([collectionView.dataSource isKindOfClass:[NICollectionViewModel class]]) {
-    NICollectionViewModel* model = (NICollectionViewModel *)collectionView.dataSource;
-    id object = [model objectAtIndexPath:indexPath];
+  NIDASSERT([collectionView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]);
+  if ([collectionView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]) {
+    id object = [(id<NIActionsDataSource>)collectionView.dataSource objectAtIndexPath:indexPath];
 
     if ([self isObjectActionable:object]) {
       NIObjectActions* action = [self actionForObjectOrClassOfObject:object];

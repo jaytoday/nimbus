@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,12 +37,11 @@
 //
 
 @interface BlockCellsViewController ()
-@property (nonatomic, readwrite, retain) NITableViewModel* model;
+@property (nonatomic, retain) NITableViewModel* model;
 @end
 
 @implementation BlockCellsViewController
 
-@synthesize model = _model;
 
 - (id)initWithStyle:(UITableViewStyle)style {
   if ((self = [super initWithStyle:UITableViewStylePlain])) {
@@ -69,11 +68,12 @@
       NSString* text = object;
       [[UIColor blackColor] set];
       UIFont* titleFont = [UIFont boldSystemFontOfSize:16];
-      [text drawAtPoint:CGPointMake(10, 5) withFont:titleFont];
+      [text drawAtPoint:CGPointMake(10, 5) withAttributes:@{NSFontAttributeName: titleFont}];
 
       // Draw a static subtitle below the title.
       [[UIColor grayColor] set];
-      [@"Subtitle" drawAtPoint:CGPointMake(10, 5 + titleFont.lineHeight) withFont:[UIFont systemFontOfSize:12]];
+      [@"Subtitle" drawAtPoint:CGPointMake(10, 5 + titleFont.lineHeight)
+                withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:12]}];
 
       // Draw the Nimbus application icon on the right edge of the cell.
       [image drawAtPoint:CGPointMake(CGRectGetMaxX(rect) - image.size.width - 10, 5)];
@@ -89,7 +89,7 @@
     for (NSInteger ix = 0; ix < 1000; ++ix) {
       [tableContents addObject:
        [NIDrawRectBlockCellObject objectWithBlock:drawTextBlock object:
-        [NSString stringWithFormat:@"This is cell #%d", ix]]];
+        [NSString stringWithFormat:@"This is cell #%zd", ix]]];
     }
 
     _model = [[NITableViewModel alloc] initWithListArray:tableContents
@@ -108,8 +108,8 @@
   self.tableView.dataSource = _model;
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-  return NIIsSupportedOrientation(toInterfaceOrientation);
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return NIIsPad() ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 @end

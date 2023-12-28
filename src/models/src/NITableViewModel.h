@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,10 +17,16 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "NIPreprocessorMacros.h" /* for NI_WEAK */
+#import "NIActions.h"  /* for NIActionsDataSource */
+#import "NIPreprocessorMacros.h" /* for weak */
+
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
 
 #if NS_BLOCKS_AVAILABLE
-typedef UITableViewCell* (^NITableViewModelCellForIndexPathBlock)(UITableView* tableView, NSIndexPath* indexPath, id object);
+typedef UITableViewCell * _Nonnull (^NITableViewModelCellForIndexPathBlock)(UITableView* _Nonnull tableView, NSIndexPath* _Nonnull indexPath, id _Nonnull object);
 #endif // #if NS_BLOCKS_AVAILABLE
 
 @protocol NITableViewModelDelegate;
@@ -46,21 +52,22 @@ typedef enum {
  * This base class is non-mutable, much like an NSArray. You must initialize this model with
  * the contents when you create it.
  *
- *      @ingroup TableViewModels
+ * @ingroup TableViewModels
  */
-@interface NITableViewModel : NSObject <UITableViewDataSource>
+@interface NITableViewModel : NSObject <NIActionsDataSource, UITableViewDataSource>
 
 #pragma mark Creating Table View Models
 
 // Designated initializer.
-- (id)initWithDelegate:(id<NITableViewModelDelegate>)delegate;
-- (id)initWithListArray:(NSArray *)sectionedArray delegate:(id<NITableViewModelDelegate>)delegate;
+- (nonnull id)initWithDelegate:(nullable id<NITableViewModelDelegate>)delegate NS_DESIGNATED_INITIALIZER;
+- (nonnull id)initWithListArray:(nonnull NSArray *)sectionedArray delegate:(nullable id<NITableViewModelDelegate>)delegate;
 // Each NSString in the array starts a new section. Any other object is a new row (with exception of certain model-specific objects).
-- (id)initWithSectionedArray:(NSArray *)sectionedArray delegate:(id<NITableViewModelDelegate>)delegate;
+- (nonnull id)initWithSectionedArray:(nonnull NSArray *)sectionedArray delegate:(nullable id<NITableViewModelDelegate>)delegate;
 
 #pragma mark Accessing Objects
 
-- (id)objectAtIndexPath:(NSIndexPath *)indexPath;
+// This method is not appropriate for performance critical codepaths.
+- (nullable NSIndexPath *)indexPathForObject:(nonnull id)object;
 
 #pragma mark Configuration
 
@@ -73,12 +80,12 @@ typedef enum {
 
 #pragma mark Creating Table View Cells
 
-@property (nonatomic, NI_WEAK) id<NITableViewModelDelegate> delegate;
+@property (nonatomic, weak, nullable) id<NITableViewModelDelegate> delegate;
 
 #if NS_BLOCKS_AVAILABLE
 // If both the delegate and this block are provided, cells returned by this block will be used
 // and the delegate will not be called.
-@property (nonatomic, copy) NITableViewModelCellForIndexPathBlock createCellBlock;
+@property (nonatomic, copy, nullable) NITableViewModelCellForIndexPathBlock createCellBlock;
 #endif // #if NS_BLOCKS_AVAILABLE
 
 @end
@@ -86,7 +93,7 @@ typedef enum {
 /**
  * A protocol for NITableViewModel to fetch rows to be displayed for the table view.
  *
- *      @ingroup TableViewModels
+ * @ingroup TableViewModels
  */
 @protocol NITableViewModelDelegate <NSObject>
 
@@ -97,10 +104,30 @@ typedef enum {
  *
  * The implementation of this method will generally use object to customize the cell.
  */
-- (UITableViewCell *)tableViewModel: (NITableViewModel *)tableViewModel
-                   cellForTableView: (UITableView *)tableView
-                        atIndexPath: (NSIndexPath *)indexPath
-                         withObject: (id)object;
+- (nonnull UITableViewCell *)tableViewModel: (nonnull NITableViewModel *)tableViewModel
+                           cellForTableView: (nonnull UITableView *)tableView
+                                atIndexPath: (nonnull NSIndexPath *)indexPath
+                                 withObject: (nonnull id)object;
+
+@end
+
+/**
+ * An object used in sectioned arrays to denote a section header title.
+ *
+ * Meant to be used in a sectioned array for NITableViewModel.
+ *
+ * <h3>Example</h3>
+ *
+ * @code
+ *  [NITableViewModelHeader headerWithTitle:@"Header"]
+ * @endcode
+ */
+@interface NITableViewModelHeader : NSObject
+
++ (nonnull instancetype)headerWithTitle:(nonnull NSString *)title;
+- (nonnull instancetype)initWithTitle:(nonnull NSString *)title;
+
+@property (nonatomic, copy, nullable) NSString* title;
 
 @end
 
@@ -117,10 +144,10 @@ typedef enum {
  */
 @interface NITableViewModelFooter : NSObject
 
-+ (id)footerWithTitle:(NSString *)title;
-- (id)initWithTitle:(NSString *)title;
++ (nonnull id)footerWithTitle:(nonnull NSString *)title;
+- (nonnull id)initWithTitle:(nonnull NSString *)title;
 
-@property (nonatomic, copy) NSString* title;
+@property (nonatomic, copy, nullable) NSString* title;
 
 @end
 
@@ -131,7 +158,7 @@ typedef enum {
  *
  * This method can be used to create an empty model.
  *
- *      @fn NITableViewModel::initWithDelegate:
+ * @fn NITableViewModel::initWithDelegate:
  */
 
 /**
@@ -152,7 +179,7 @@ typedef enum {
  * [[NIStaticTableViewModel alloc] initWithListArray:contents delegate:self];
  * @endcode
  *
- *      @fn NITableViewModel::initWithListArray:delegate:
+ * @fn NITableViewModel::initWithListArray:delegate:
  */
 
 /**
@@ -176,10 +203,32 @@ typedef enum {
  *  [NSDictionary dictionaryWithObject:@"Row 3" forKey:@"title"],
  *  [NITableViewModelFooter footerWithTitle:@"Footer"],
  *  nil];
- * [[NIStaticTableViewModel alloc] initWithSectionedArray:contents delegate:self];
+ * [[NITableViewModel alloc] initWithSectionedArray:contents delegate:self];
  * @endcode
  *
- *      @fn NITableViewModel::initWithSectionedArray:delegate:
+ * <h3>Example using NITableViewModelHeader</h3>
+ *
+ * When a NITableViewModelHeader is present in the array then strings will no longer be
+ * treated as section headers; NITableViewModelHeader instances will be used as section
+ * headers instead. This enables strings to be used as simple objects in a sectioned
+ * array, similar to how they can be used in a list array.
+ *
+ * @code
+ * NSArray* contents =
+ * [NSArray arrayWithObjects:
+ *  [NITableViewModelHeader headerWithTitle:@"Section 1"],
+ *  @"Row 1",
+ *  @"Row 2",
+ *  [NITableViewModelHeader headerWithTitle:@"Section 2"],
+ *  // This section is empty.
+ *  [NITableViewModelHeader headerWithTitle:@"Section 3"],
+ *  @"Row 3",
+ *  [NITableViewModelFooter footerWithTitle:@"Footer"],
+ *  nil];
+ * [[NITableViewModel alloc] initWithSectionedArray:contents delegate:self];
+ * @endcode
+ *
+ * @fn NITableViewModel::initWithSectionedArray:delegate:
  */
 
 
@@ -191,9 +240,16 @@ typedef enum {
  * If no object exists at the given index path (an invalid index path, for example) then nil
  * will be returned.
  *
- *      @fn NITableViewModel::objectAtIndexPath:
+ * @fn NITableViewModel::objectAtIndexPath:
  */
 
+/**
+ * Returns the index path of the given object within the model.
+ *
+ * If the model does not contain the object then nil will be returned.
+ *
+ * @fn NITableViewModel::indexPathForObject:
+ */
 
 /** @name Configuration */
 
@@ -202,10 +258,10 @@ typedef enum {
  *
  * Calling this method will compile the section index depending on the index type chosen.
  *
- *      @param sectionIndexType The type of section index to display.
- *      @param showsSearch      Whether or not to show the search icon at the top of the index.
- *      @param showsSummary     Whether or not to show the summary icon at the bottom of the index.
- *      @fn NITableViewModel::setSectionIndexType:showsSearch:showsSummary:
+ * @param sectionIndexType The type of section index to display.
+ * @param showsSearch      Whether or not to show the search icon at the top of the index.
+ * @param showsSummary     Whether or not to show the summary icon at the bottom of the index.
+ * @fn NITableViewModel::setSectionIndexType:showsSearch:showsSummary:
  */
 
 /**
@@ -215,7 +271,7 @@ typedef enum {
  *
  * NITableViewModelSectionIndexNone by default.
  *
- *      @fn NITableViewModel::sectionIndexType
+ * @fn NITableViewModel::sectionIndexType
  */
 
 /**
@@ -223,7 +279,7 @@ typedef enum {
  *
  * NO by default.
  *
- *      @fn NITableViewModel::sectionIndexShowsSearch
+ * @fn NITableViewModel::sectionIndexShowsSearch
  */
 
 /**
@@ -231,7 +287,7 @@ typedef enum {
  *
  * NO by default.
  *
- *      @fn NITableViewModel::sectionIndexShowsSummary
+ * @fn NITableViewModel::sectionIndexShowsSummary
  */
 
 
@@ -240,7 +296,7 @@ typedef enum {
 /**
  * A delegate used to fetch table view cells for the data source.
  *
- *      @fn NITableViewModel::delegate
+ * @fn NITableViewModel::delegate
  */
 
 #if NS_BLOCKS_AVAILABLE
@@ -248,7 +304,9 @@ typedef enum {
 /**
  * A block used to create a UITableViewCell for a given object.
  *
- *      @fn NITableViewModel::createCellBlock
+ * @fn NITableViewModel::createCellBlock
  */
 
 #endif // #if NS_BLOCKS_AVAILABLE
+
+API_DEPRECATED_END

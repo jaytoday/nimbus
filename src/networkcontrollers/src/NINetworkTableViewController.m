@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,24 +23,20 @@
 #endif
 
 @interface NINetworkTableViewController()
-@property (nonatomic, readwrite, assign) UIActivityIndicatorViewStyle activityIndicatorStyle;
-@property (nonatomic, readwrite, assign) UITableViewStyle tableViewStyle;
+@property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorStyle;
+@property (nonatomic, assign) UITableViewStyle tableViewStyle;
 @end
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NINetworkTableViewController
 
-@synthesize activityIndicatorStyle = _activityIndicatorStyle;
-@synthesize tableViewStyle = _tableViewStyle;
-@synthesize activityIndicator = _activityIndicator;
-@synthesize tableView = _tableView;
-@synthesize clearsSelectionOnViewWillAppear = _clearsSelectionOnViewWillAppear;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)dealloc {
+  _tableView.delegate = nil;
+  _tableView.dataSource = nil;
+}
+
 - (id)initWithStyle:(UITableViewStyle)style activityIndicatorStyle:(UIActivityIndicatorViewStyle)activityIndicatorStyle {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     self.tableViewStyle = style;
@@ -50,42 +46,30 @@
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
   return [self initWithStyle:UITableViewStylePlain
       activityIndicatorStyle:UIActivityIndicatorViewStyleGray];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)loadView {
   [super loadView];
 
   self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:self.tableViewStyle];
-  self.tableView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  self.tableView.autoresizingMask =
+      (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
   self.tableView.delegate = self;
   self.tableView.dataSource = self;
   [self.view addSubview:self.tableView];
 
   self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:self.activityIndicatorStyle];
-  self.activityIndicator.autoresizingMask = UIViewAutoresizingFlexibleMargins;
+  self.activityIndicator.autoresizingMask =
+      (UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin
+       | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin);
   [self.activityIndicator sizeToFit];
   self.activityIndicator.frame = NIFrameOfCenteredViewWithinView(self.activityIndicator, self.view);
   [self.view addSubview:self.activityIndicator];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)viewDidUnload {
-  self.tableView = nil;
-  self.activityIndicator = nil;
-
-  [super viewDidUnload];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
@@ -95,30 +79,20 @@
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - UITableViewDataSource
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
   return 0;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
   return nil;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark - Public Methods
+#pragma mark - Public
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)setIsLoading:(BOOL)isLoading {
   self.tableView.hidden = isLoading;
 

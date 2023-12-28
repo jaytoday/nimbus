@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Forked from Three20 June 10, 2011 - Copyright 2009-2011 Facebook
 //
@@ -17,6 +17,8 @@
 //
 
 #import <Foundation/Foundation.h>
+
+API_DEPRECATED_BEGIN("Use standard Foundation APIs instead.", ios(12, API_TO_BE_DEPRECATED))
 
 #if defined __cplusplus
 extern "C" {
@@ -52,9 +54,9 @@ BOOL NIIsSetWithObjects(id object);
 BOOL NIIsStringWithAnyText(id object);
 
 #if defined __cplusplus
-};
+}
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Non-Empty Collection Testing /////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+API_DEPRECATED_END

@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 Jeff Verkoeyen
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@
  */
 @interface NetworkPhotoAlbumViewController : NIToolbarPhotoViewController {
 @private
-  NSOperationQueue* _queue;
   
   NSMutableSet* _activeRequests;
 
@@ -77,13 +76,6 @@
  * This is unloaded when the controller's view is unloaded from memory.
  */
 @property (nonatomic, readonly, retain) NIImageMemoryCache* thumbnailImageCache;
-
-/**
- * The operation queue that runs all of the network and processing operations.
- *
- * This is unloaded when the controller's view is unloaded from memory.
- */
-@property (nonatomic, readonly, retain) NSOperationQueue* queue;
 
 /**
  * Generate the in-memory cache key for the given index.

@@ -1,5 +1,5 @@
 //
-// Copyright 2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,14 +19,19 @@
 
 #import "NimbusCore.h"
 
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
+
 /**
- * The NITableViewActions class provides an interface for attaching actions to objects in a
- * NITableViewModel.
+ * The NITableViewActions class provides an interface for attaching actions to objects from a
+ * NIActionsDataSource.
  *
  * <h2>Basic Use</h2>
  *
- * NITableViewModel and NITableViewActions cooperate to solve two related tasks: data
- * representation and user actions, respectively. A NITableViewModel is composed of objects and
+ * NIActionsDataSource and NITableViewActions cooperate to solve two related tasks: data
+ * representation and user actions, respectively. A NIActionsDataSource provides objects and
  * NITableViewActions maintains a mapping of actions to these objects. The object's attached actions
  * are executed when the user interacts with the cell representing an object.
  *
@@ -42,9 +47,9 @@
 tableView.delegate = [self.actions forwardingTo:self];
 @endcode
  *
- * The dataSource property of the table view must be an instance of NITableViewModel.
+ * The dataSource property of the table view must conform to NIActionsDataSource.
  *
- *      @ingroup ModelTools
+ * @ingroup ModelTools
  */
 @interface NITableViewActions : NIActions <UITableViewDelegate>
 
@@ -80,9 +85,9 @@ tableView.delegate = [self.actions forwardingTo:self];
 self.tableView.delegate = [self.actions forwardingTo:self.tableView.delegate];
 @endcode
  *
- *      @param forwardDelegate The delegate to forward invocations to.
- *      @returns self so that this method can be chained.
- *      @fn NITableViewActions::forwardingTo:
+ * @param forwardDelegate The delegate to forward invocations to.
+ * @returns self so that this method can be chained.
+ * @fn NITableViewActions::forwardingTo:
  */
 
 /**
@@ -91,8 +96,8 @@ self.tableView.delegate = [self.actions forwardingTo:self.tableView.delegate];
  * If a forwared delegate is about to be released but this object may live on, you must remove the
  * forwarding in order to avoid invalid access errors at runtime.
  *
- *      @param forwardDelegate The delegate to stop forwarding invocations to.
- *      @fn NITableViewActions::removeForwarding:
+ * @param forwardDelegate The delegate to stop forwarding invocations to.
+ * @fn NITableViewActions::removeForwarding:
  */
 
 /** @name Object State */
@@ -101,18 +106,18 @@ self.tableView.delegate = [self.actions forwardingTo:self.tableView.delegate];
  * Returns the accessory type this actions object will apply to a cell for the
  * given object when it is displayed.
  *
- *      @param object The object to determine the accessory type for.
- *      @returns the accessory type this object's cell will have.
- *      @fn NITableViewActions::accessoryTypeForObject:
+ * @param object The object to determine the accessory type for.
+ * @returns the accessory type this object's cell will have.
+ * @fn NITableViewActions::accessoryTypeForObject:
  */
 
 /**
  * Returns the cell selection style this actions object will apply to a cell
  * for the given object when it is displayed.
  *
- *      @param object The object to determine the selection style for.
- *      @returns the selection style this object's cell will have.
- *      @fn NITableViewActions::selectionStyleForObject:
+ * @param object The object to determine the selection style for.
+ * @returns the selection style this object's cell will have.
+ * @fn NITableViewActions::selectionStyleForObject:
  */
 
 /** @name Configurable Properties */
@@ -123,5 +128,7 @@ self.tableView.delegate = [self.actions forwardingTo:self.tableView.delegate];
  *
  * By default this is UITableViewCellSelectionStyleBlue.
  *
- *      @fn NITableViewActions::tableViewCellSelectionStyle
+ * @fn NITableViewActions::tableViewCellSelectionStyle
  */
+
+API_DEPRECATED_END

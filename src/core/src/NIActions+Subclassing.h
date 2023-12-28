@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2013 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
 //
 
 #import "NIActions.h"
-#import "NimbusCore.h"
+
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
 
 @interface NIObjectActions : NSObject
 
@@ -23,16 +27,18 @@
 @property (nonatomic, copy) NIActionBlock detailAction;
 @property (nonatomic, copy) NIActionBlock navigateAction;
 
-@property (nonatomic, assign) SEL tapSelector;
-@property (nonatomic, assign) SEL detailSelector;
-@property (nonatomic, assign) SEL navigateSelector;
+@property (nonatomic) SEL tapSelector;
+@property (nonatomic) SEL detailSelector;
+@property (nonatomic) SEL navigateSelector;
 
 @end
 
 @interface NIActions ()
 
-@property (nonatomic, NI_WEAK) id target;
+@property (nonatomic, weak) id target;
 
 - (NIObjectActions *)actionForObjectOrClassOfObject:(id<NSObject>)object;
 
 @end
+
+API_DEPRECATED_END

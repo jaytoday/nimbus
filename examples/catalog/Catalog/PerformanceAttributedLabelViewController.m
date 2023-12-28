@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,14 +38,12 @@
 //
 
 @interface PerformanceAttributedLabelViewController()
-@property (nonatomic, readwrite, retain) NIAttributedLabel* label;
-@property (nonatomic, readwrite, retain) UIScrollView* scrollView;
+@property (nonatomic, retain) NIAttributedLabel* label;
+@property (nonatomic, retain) UIScrollView* scrollView;
 @end
 
 @implementation PerformanceAttributedLabelViewController
 
-@synthesize label = _label;
-@synthesize scrollView = _scrollView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
   self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -63,14 +61,12 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  
+
+  self.view.backgroundColor = [UIColor whiteColor];
+
   self.label = [[NIAttributedLabel alloc] initWithFrame:CGRectZero];
   self.label.numberOfLines = 0;
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < NIIOS_6_0
   self.label.lineBreakMode = NSLineBreakByWordWrapping;
-#else
-  self.label.lineBreakMode = NSLineBreakByWordWrapping;
-#endif
   self.label.font = [UIFont fontWithName:@"Optima-Regular" size:20];
   self.label.autoDetectLinks = YES;
   self.label.dataDetectorTypes = NSTextCheckingAllSystemTypes;
@@ -95,16 +91,13 @@
   @"Excepteur minim pop-up, craft beer mixtape brooklyn raw denim gentrify brunch sed you probably haven't heard of them cliche voluptate photo booth. Forage marfa laboris portland mustache, reprehenderit wes anderson eu. Master cleanse godard organic post-ironic. Elit +1 est wes anderson qui cliche cardigan, non deserunt godard consectetur photo booth organic forage. Pickled fugiat sint consectetur williamsburg. Butcher sustainable readymade fap chambray, labore letterpress gluten-free 3 wolf moon gentrify vero qui mcsweeney's whatever. Dreamcatcher farm-to-table lo-fi nesciunt magna, hella reprehenderit messenger bag ullamco VHS tofu est.";
 
   self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-  self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  self.scrollView.autoresizingMask =
+      (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
   self.scrollView.contentInset = UIEdgeInsetsMake(20, 0, 20, 0);
   [self.scrollView addSubview:self.label];
   [self.view addSubview:self.scrollView];
 
   [self _layoutLabel];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-  return NIIsSupportedOrientation(interfaceOrientation);
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {

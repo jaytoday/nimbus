@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,12 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NICollectionViewModel()
+#import "NICollectionViewModel.h"
 
-@property (nonatomic, NI_STRONG) NSArray* sections; // Array of NICollectionViewModelSection
-@property (nonatomic, NI_STRONG) NSArray* sectionIndexTitles;
-@property (nonatomic, NI_STRONG) NSDictionary* sectionPrefixToSectionIndex;
-
-- (void)_resetCompiledData;
-- (void)_compileDataWithListArray:(NSArray *)listArray;
-- (void)_compileDataWithSectionedArray:(NSArray *)sectionedArray;
-
-@end
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
 
 @interface NICollectionViewModelSection : NSObject
 
@@ -34,6 +29,22 @@
 
 @property (nonatomic, copy) NSString* headerTitle;
 @property (nonatomic, copy) NSString* footerTitle;
-@property (nonatomic, NI_STRONG) NSArray* rows;
+@property (nonatomic, strong) NSArray* rows;
 
 @end
+
+@interface NICollectionViewModel()
+
+@property (nonatomic, strong) NSArray* sections; // Array of NICollectionViewModelSection
+@property (nonatomic, strong) NSArray* sectionIndexTitles;
+@property (nonatomic, strong) NSDictionary* sectionPrefixToSectionIndex;
+
+- (void)_resetCompiledData;
+- (void)_compileDataWithListArray:(NSArray *)listArray;
+- (void)_compileDataWithSectionedArray:(NSArray *)sectionedArray;
+- (void)_setSectionsWithArray:(NSArray *)sectionsArray;
+- (NICollectionViewModelSection *)_sectionFromListArray:(NSArray *)rows;
+
+@end
+
+API_DEPRECATED_END

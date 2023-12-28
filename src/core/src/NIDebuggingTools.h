@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Forked from Three20 June 10, 2011 - Copyright 2009-2011 Facebook
 //
@@ -18,6 +18,7 @@
 
 #import <Foundation/Foundation.h>
 
+API_DEPRECATED_BEGIN("Use Foundation APIs instead.", ios(12, API_TO_BE_DEPRECATED))
 /**
  * For inspecting code and writing to logs in debug builds.
  *
@@ -79,9 +80,9 @@
  *  NIMaxLogLevel = NILOGLEVEL_INFO;
  * @endcode
  *
- *      @ingroup NimbusCore
- *      @defgroup Debugging-Tools Debugging Tools
- *      @{
+ * @ingroup NimbusCore
+ * @defgroup Debugging-Tools Debugging Tools
+ * @{
  */
 
 #if defined(DEBUG) || defined(NI_DEBUG)
@@ -94,12 +95,19 @@
  */
 #import <TargetConditionals.h>
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 int NIIsInDebugger(void);
+
+#if defined __cplusplus
+}
+#endif
+
 #if TARGET_IPHONE_SIMULATOR
-// We leave the __asm__ in this macro so that when a break occurs, we don't have to step out of
-// a "breakInDebugger" function.
 #define NIDASSERT(xx) { if (!(xx)) { NIDPRINT(@"NIDASSERT failed: %s", #xx); \
-if (NIDebugAssertionsShouldBreak && NIIsInDebugger()) { __asm__("int $3\n" : : ); } } \
+if (NIDebugAssertionsShouldBreak && NIIsInDebugger()) { __builtin_debugtrap(); } } \
 } ((void)0)
 #else
 #define NIDASSERT(xx) { if (!(xx)) { NIDPRINT(@"NIDASSERT failed: %s", #xx); \
@@ -182,7 +190,6 @@ xx, ##__VA_ARGS__)
  */
 #define NIDINFO(xx, ...)  NIDCONDITIONLOG((NILOGLEVEL_INFO <= NIMaxLogLevel), xx, ##__VA_ARGS__)
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Debugging Tools //////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+API_DEPRECATED_END

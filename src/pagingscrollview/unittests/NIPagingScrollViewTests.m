@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,24 @@
 
 // See: http://bit.ly/hS5nNh for unit test macros.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 #import "NimbusPagingScrollView.h"
 
-@interface NIPagingScrollViewTests : SenTestCase
+@interface NIPagingScrollViewTests : XCTestCase
 @end
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NIPagingScrollViewTests
 
+/** Test that rotating with a zero frame does not throw exceptions. */
+- (void)testRotationWithZeroFrame {
+  NIPagingScrollView *pagingScrollView = [[NIPagingScrollView alloc] initWithFrame:CGRectZero];
+  UIInterfaceOrientation targetInterfaceOrientation = UIInterfaceOrientationPortrait;
+  XCTAssertNoThrow([pagingScrollView willRotateToInterfaceOrientation:targetInterfaceOrientation
+                                                             duration:0.25]);
+  XCTAssertNoThrow([pagingScrollView willAnimateRotationToInterfaceOrientation:targetInterfaceOrientation
+                                                                      duration:0.25]);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)testNothing {
 }
 
 @end

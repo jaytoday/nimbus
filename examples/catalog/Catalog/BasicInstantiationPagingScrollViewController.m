@@ -1,6 +1,6 @@
 //
 // Copyright 2012 Manu Cornet
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -50,12 +50,11 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
 
 @interface BasicInstantiationPagingScrollViewController() <NIPagingScrollViewDataSource>
 // We must retain the paging scroll view in order to autorotate it correctly.
-@property (nonatomic, readwrite, retain) NIPagingScrollView* pagingScrollView;
+@property (nonatomic, retain) NIPagingScrollView* pagingScrollView;
 @end
 
 @implementation BasicInstantiationPagingScrollViewController
 
-@synthesize pagingScrollView = _pagingScrollView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
   if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) {
@@ -67,11 +66,16 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  // iOS 7-only.
+  if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+  }
   self.view.backgroundColor = [UIColor blackColor];
 
   // Create a paging scroll view the same way we would any other type of view.
   self.pagingScrollView = [[NIPagingScrollView alloc] initWithFrame:self.view.bounds];
-  self.pagingScrollView.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  self.pagingScrollView.autoresizingMask =
+      (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
 
   // A paging scroll view has a data source much like a UITableView.
   self.pagingScrollView.dataSource = self;
@@ -88,8 +92,8 @@ static NSString* const kPageReuseIdentifier = @"SamplePageIdentifier";
   [super didReceiveMemoryWarning];
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return NIIsSupportedOrientation(interfaceOrientation);
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return NIIsPad() ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation

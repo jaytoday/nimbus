@@ -1,5 +1,5 @@
 //
-// Copyright 2013 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 
 
 #import "NIMutableCollectionViewModel.h"
+#import "NICollectionViewModel+Private.h"
 
 @interface NIMutableCollectionViewModel (Private)
 
-@property (nonatomic, NI_STRONG) NSMutableArray* sections; // Array of NICollectionViewModelSection
+@property (nonatomic, strong) NSMutableArray* sections; // Array of NICollectionViewModelSection
 
 @end
 

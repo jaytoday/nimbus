@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Forked from Three20 June 10, 2011 - Copyright 2009-2011 Facebook
 //
@@ -19,6 +19,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import "NIPreprocessorMacros.h"
+
+API_DEPRECATED_BEGIN("Use trait collections instead.", ios(12, API_TO_BE_DEPRECATED))
+
 #if defined __cplusplus
 extern "C" {
 #endif
@@ -36,9 +40,9 @@ extern "C" {
  *  }
  * @endcode
  *
- *      @ingroup NimbusCore
- *      @defgroup Device-Orientation Device Orientation
- *      @{
+ * @ingroup NimbusCore
+ * @defgroup Device-Orientation Device Orientation
+ * @{
  */
 
 /**
@@ -53,16 +57,18 @@ extern "C" {
  *
  *      Always returns YES.
  */
-BOOL NIIsSupportedOrientation(UIInterfaceOrientation orientation);
+BOOL NIIsSupportedOrientation(UIInterfaceOrientation orientation)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * Returns the application's current interface orientation.
  *
  * This is simply a convenience method for [UIApplication sharedApplication].statusBarOrientation.
  *
- *      @returns The current interface orientation.
+ * @returns The current interface orientation.
  */
-UIInterfaceOrientation NIInterfaceOrientation(void);
+UIInterfaceOrientation NIInterfaceOrientation(void) NI_EXTENSION_UNAVAILABLE_IOS("")
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * Returns YES if the device is a phone and the orientation is landscape.
@@ -70,9 +76,10 @@ UIInterfaceOrientation NIInterfaceOrientation(void);
  * This is a useful check for phone landscape mode which often requires
  * additional logic to handle the smaller vertical real estate.
  *
- *      @returns YES if the device is a phone and orientation is landscape.
+ * @returns YES if the device is a phone and orientation is landscape.
  */
-BOOL NIIsLandscapePhoneOrientation(UIInterfaceOrientation orientation);
+BOOL NIIsLandscapePhoneOrientation(UIInterfaceOrientation orientation)
+    API_UNAVAILABLE(tvos, watchos);
 
 /**
  * Creates an affine transform for the given device orientation.
@@ -80,13 +87,13 @@ BOOL NIIsLandscapePhoneOrientation(UIInterfaceOrientation orientation);
  * This is useful for creating a transformation matrix for a view that has been added
  * directly to the window and doesn't automatically have its transformation modified.
  */
-CGAffineTransform NIRotateTransformForOrientation(UIInterfaceOrientation orientation);
+CGAffineTransform NIRotateTransformForOrientation(UIInterfaceOrientation orientation)
+    API_UNAVAILABLE(tvos, watchos);
 
 #if defined __cplusplus
-};
+}
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Device Orientation ///////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
+API_DEPRECATED_END

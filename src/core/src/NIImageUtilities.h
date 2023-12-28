@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2013 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+
+API_DEPRECATED_BEGIN("Use UIImage APIs instead.", ios(12, API_TO_BE_DEPRECATED))
 
 #if defined __cplusplus
 extern "C" {
@@ -39,12 +41,13 @@ extern "C" {
  * stretching images that have gradients. For example, an image with a vertical gradient
  * can be stretched horizontally, but will look odd if stretched vertically.
  */
-UIImage* NIStretchableImageFromImage(UIImage* image);
+UIImage* NIStretchableImageFromImage(UIImage* image)
+    API_UNAVAILABLE(tvos, watchos);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**@}*/// End of Image Utilities //////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined __cplusplus
-};
+}
 #endif
+
+API_DEPRECATED_END

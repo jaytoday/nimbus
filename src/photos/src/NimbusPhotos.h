@@ -1,5 +1,5 @@
 //
-// Copyright 2011 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -115,8 +115,6 @@
 #import "NIPhotoScrollView.h"
 #import "NIPhotoScrollViewDelegate.h"
 #import "NIPhotoScrollViewPhotoSize.h"
-#import "NIPhotoScrubberView.h"
-#import "NIToolbarPhotoViewController.h"
 
 #import "NimbusPagingScrollView.h"
 #import "NimbusCore.h"

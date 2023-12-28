@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@
 // You will find the following Nimbus features used:
 //
 // [core]
-// UIViewAutoresizingFlexibleDimensions
 // RGBCOLOR
 // RGBACOLOR
 //
@@ -56,6 +55,12 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  // iOS 7-only.
+  if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
+    self.edgesForExtendedLayout = UIRectEdgeNone;
+  }
+  self.view.backgroundColor = [UIColor whiteColor];
+
   // We create an NIAttributedLabel the same way we would a UILabel.
   NIAttributedLabel* label = [[NIAttributedLabel alloc] initWithFrame:CGRectZero];
 
@@ -70,10 +75,7 @@
   // additional CoreText properties.
   label.text = @"An explorer's tale";
 
-  // UIViewAutoresizingFlexibleDimensions is a Nimbus autoresizing mask that causes the view to
-  // grow and shrink with its super view. When we want to a view to fill its super view this is
-  // generally the mask that we'll use.
-  label.autoresizingMask = UIViewAutoresizingFlexibleDimensions;
+  label.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
 
   // These are standard UILabel styles. We can set these whenever we like and the attributed label
   // will apply them to entire string even if we change the text again.
@@ -94,10 +96,6 @@
   label.frame = CGRectInset(self.view.bounds, 20, 20);
 
   [self.view addSubview:label];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-  return NIIsSupportedOrientation(interfaceOrientation);
 }
 
 @end

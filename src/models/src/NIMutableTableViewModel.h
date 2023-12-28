@@ -1,5 +1,5 @@
 //
-// Copyright 2011-2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,17 @@
 
 #import "NITableViewModel.h"
 
+API_DEPRECATED_BEGIN("🕘 Schedule time to migrate. "
+                     "Use branded UITableView or UICollectionView instead: go/material-ios-lists. "
+                     "This is go/material-ios-migrations#not-scriptable 🕘",
+                     ios(12, API_TO_BE_DEPRECATED))
+
 @class NIMutableTableViewModel;
 
 /**
  * A protocol for NIMutableTableViewModel to handle editing states for objects.
  *
- *      @ingroup TableViewModels
+ * @ingroup TableViewModels
  */
 @protocol NIMutableTableViewModelDelegate <NSObject, NITableViewModelDelegate>
 
@@ -32,20 +37,20 @@
  *
  * If this method is not implemented, the default response is assumed to be NO.
  */
-- (BOOL)tableViewModel:(NIMutableTableViewModel *)tableViewModel
-         canEditObject:(id)object
-           atIndexPath:(NSIndexPath *)indexPath
-           inTableView:(UITableView *)tableView;
+- (BOOL)tableViewModel:(nonnull NIMutableTableViewModel *)tableViewModel
+         canEditObject:(nonnull id)object
+           atIndexPath:(nonnull NSIndexPath *)indexPath
+           inTableView:(nonnull UITableView *)tableView;
 
 /**
  * Asks the receiver whether the object at the given index path should be moveable.
  *
  * If this method is not implemented, the default response is assumed to be NO.
  */
-- (BOOL)tableViewModel:(NIMutableTableViewModel *)tableViewModel
-         canMoveObject:(id)object
-           atIndexPath:(NSIndexPath *)indexPath
-           inTableView:(UITableView *)tableView;
+- (BOOL)tableViewModel:(nonnull NIMutableTableViewModel *)tableViewModel
+         canMoveObject:(nonnull id)object
+           atIndexPath:(nonnull NSIndexPath *)indexPath
+           inTableView:(nonnull UITableView *)tableView;
 
 /**
  * Asks the receiver whether the given object should be moved.
@@ -54,11 +59,11 @@
  *
  * Returning NO will stop the model from handling the move logic.
  */
-- (BOOL)tableViewModel:(NIMutableTableViewModel *)tableViewModel
-      shouldMoveObject:(id)object
-           atIndexPath:(NSIndexPath *)indexPath
-           toIndexPath:(NSIndexPath *)toIndexPath
-           inTableView:(UITableView *)tableView;
+- (BOOL)tableViewModel:(nonnull NIMutableTableViewModel *)tableViewModel
+      shouldMoveObject:(nonnull id)object
+           atIndexPath:(nonnull NSIndexPath *)indexPath
+           toIndexPath:(nonnull NSIndexPath *)toIndexPath
+           inTableView:(nonnull UITableView *)tableView;
 
 /**
  * Asks the receiver what animation should be used when deleting the object at the given index path.
@@ -66,10 +71,10 @@
  * If this method is not implemented, the default response is assumed to be
  * UITableViewRowAnimationAutomatic.
  */
-- (UITableViewRowAnimation)tableViewModel:(NIMutableTableViewModel *)tableViewModel
-              deleteRowAnimationForObject:(id)object
-                              atIndexPath:(NSIndexPath *)indexPath
-                              inTableView:(UITableView *)tableView;
+- (UITableViewRowAnimation)tableViewModel:(nonnull NIMutableTableViewModel *)tableViewModel
+              deleteRowAnimationForObject:(nonnull id)object
+                              atIndexPath:(nonnull NSIndexPath *)indexPath
+                              inTableView:(nonnull UITableView *)tableView;
 
 /**
  * Asks the receiver whether the given object should be deleted.
@@ -86,10 +91,10 @@ NSArray *indexPaths = [self removeObjectAtIndexPath:indexPath];
 [tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationAutomatic];
 @endcode
  */
-- (BOOL)tableViewModel:(NIMutableTableViewModel *)tableViewModel
-    shouldDeleteObject:(id)object
-           atIndexPath:(NSIndexPath *)indexPath
-           inTableView:(UITableView *)tableView;
+- (BOOL)tableViewModel:(nonnull NIMutableTableViewModel *)tableViewModel
+    shouldDeleteObject:(nonnull id)object
+           atIndexPath:(nonnull NSIndexPath *)indexPath
+           inTableView:(nonnull UITableView *)tableView;
 
 @end
 
@@ -118,23 +123,23 @@ NSIndexSet* indexSet = [self.model addSectionWithTitle:@"New section"];
 [self.tableView insertSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
 @endcode
  *
- *      @ingroup TableViewModels
+ * @ingroup TableViewModels
  */
 @interface NIMutableTableViewModel : NITableViewModel
 
-- (NSArray *)addObject:(id)object;
-- (NSArray *)addObject:(id)object toSection:(NSUInteger)section;
-- (NSArray *)addObjectsFromArray:(NSArray *)array;
-- (NSArray *)insertObject:(id)object atRow:(NSUInteger)row inSection:(NSUInteger)section;
-- (NSArray *)removeObjectAtIndexPath:(NSIndexPath *)indexPath;
+- (nonnull NSArray *)addObject:(nonnull id)object;
+- (nonnull NSArray *)addObject:(nonnull id)object toSection:(NSUInteger)section;
+- (nonnull NSArray *)addObjectsFromArray:(nonnull NSArray *)array;
+- (nonnull NSArray *)insertObject:(nonnull id)object atRow:(NSUInteger)row inSection:(NSUInteger)section;
+- (nonnull NSArray *)removeObjectAtIndexPath:(nonnull NSIndexPath *)indexPath;
 
-- (NSIndexSet *)addSectionWithTitle:(NSString *)title;
-- (NSIndexSet *)insertSectionWithTitle:(NSString *)title atIndex:(NSUInteger)index;
-- (NSIndexSet *)removeSectionAtIndex:(NSUInteger)index;
+- (nonnull NSIndexSet *)addSectionWithTitle:(nonnull NSString *)title;
+- (nonnull NSIndexSet *)insertSectionWithTitle:(nonnull NSString *)title atIndex:(NSUInteger)index;
+- (nonnull NSIndexSet *)removeSectionAtIndex:(NSUInteger)index;
 
 - (void)updateSectionIndex;
 
-@property (nonatomic, NI_WEAK) id<NIMutableTableViewModelDelegate> delegate;
+@property (nonatomic, weak, nullable) id<NIMutableTableViewModelDelegate> delegate;
 
 @end
 
@@ -146,20 +151,20 @@ NSIndexSet* indexSet = [self.model addSectionWithTitle:@"New section"];
  * If no sections exist, a section will be created without a title and the object will be added to
  * this new section.
  *
- *      @param object The object to append to the last section.
- *      @returns An array with a single NSIndexPath representing the index path of the new object
+ * @param object The object to append to the last section.
+ * @returns An array with a single NSIndexPath representing the index path of the new object
  *               in the model.
- *      @fn NIMutableTableViewModel::addObject:
+ * @fn NIMutableTableViewModel::addObject:
  */
 
 /**
  * Appends an object to the end of the given section.
  *
- *      @param object The object to append to the section.
- *      @param section The index of the section to which this object should be appended.
- *      @returns An array with a single NSIndexPath representing the index path of the new object
+ * @param object The object to append to the section.
+ * @param section The index of the section to which this object should be appended.
+ * @returns An array with a single NSIndexPath representing the index path of the new object
  *               in the model.
- *      @fn NIMutableTableViewModel::addObject:toSection:
+ * @fn NIMutableTableViewModel::addObject:toSection:
  */
 
 /**
@@ -168,21 +173,21 @@ NSIndexSet* indexSet = [self.model addSectionWithTitle:@"New section"];
  * If no section exists, a section will be created without a title and the objects will be added to
  * this new section.
  *
- *      @param array The array of objects to append to the last section.
- *      @returns An array of NSIndexPath objects representing the index paths of the objects in the
+ * @param array The array of objects to append to the last section.
+ * @returns An array of NSIndexPath objects representing the index paths of the objects in the
  *               model.
- *      @fn NIMutableTableViewModel::addObjectsFromArray:
+ * @fn NIMutableTableViewModel::addObjectsFromArray:
  */
 
 /**
  * Inserts an object into the given section at the given row.
  *
- *      @param object The object to append to the section.
- *      @param row The row within the section at which to insert the object.
- *      @param section The index of the section in which the object should be inserted.
- *      @returns An array with a single NSIndexPath representing the index path of the new object
+ * @param object The object to append to the section.
+ * @param row The row within the section at which to insert the object.
+ * @param section The index of the section in which the object should be inserted.
+ * @returns An array with a single NSIndexPath representing the index path of the new object
  *               in the model.
- *      @fn NIMutableTableViewModel::insertObject:atRow:inSection:
+ * @fn NIMutableTableViewModel::insertObject:atRow:inSection:
  */
 
 /**
@@ -191,10 +196,10 @@ NSIndexSet* indexSet = [self.model addSectionWithTitle:@"New section"];
  * If the index path does not represent a valid object then a debug assertion will fire and the
  * method will return nil without removing any object.
  *
- *      @param indexPath The index path at which to remove a single object.
- *      @returns An array with a single NSIndexPath representing the index path of the object that
+ * @param indexPath The index path at which to remove a single object.
+ * @returns An array with a single NSIndexPath representing the index path of the object that
  *               was removed from the model, or nil if no object exists at the given index path.
- *      @fn NIMutableTableViewModel::removeObjectAtIndexPath:
+ * @fn NIMutableTableViewModel::removeObjectAtIndexPath:
  */
 
 /** @name Modifying Sections */
@@ -202,26 +207,26 @@ NSIndexSet* indexSet = [self.model addSectionWithTitle:@"New section"];
 /**
  * Appends a section with a given title to the model.
  *
- *      @param title The title of the new section.
- *      @returns An index set with a single index representing the index of the new section.
- *      @fn NIMutableTableViewModel::addSectionWithTitle:
+ * @param title The title of the new section.
+ * @returns An index set with a single index representing the index of the new section.
+ * @fn NIMutableTableViewModel::addSectionWithTitle:
  */
 
 /**
  * Inserts a section with a given title to the model at the given index.
  *
- *      @param title The title of the new section.
- *      @param index The index in the model at which to add the new section.
- *      @returns An index set with a single index representing the index of the new section.
- *      @fn NIMutableTableViewModel::insertSectionWithTitle:atIndex:
+ * @param title The title of the new section.
+ * @param index The index in the model at which to add the new section.
+ * @returns An index set with a single index representing the index of the new section.
+ * @fn NIMutableTableViewModel::insertSectionWithTitle:atIndex:
  */
 
 /**
  * Removes a section at the given index.
  *
- *      @param index The index in the model of the section to remove.
- *      @returns An index set with a single index representing the index of the removed section.
- *      @fn NIMutableTableViewModel::removeSectionAtIndex:
+ * @param index The index in the model of the section to remove.
+ * @returns An index set with a single index representing the index of the removed section.
+ * @fn NIMutableTableViewModel::removeSectionAtIndex:
  */
 
 /** @name Updating the Section Index */
@@ -231,5 +236,7 @@ NSIndexSet* indexSet = [self.model addSectionWithTitle:@"New section"];
  *
  * This method should be called after modifying the model if a section index is being used.
  *
- *      @fn NIMutableTableViewModel::updateSectionIndex
+ * @fn NIMutableTableViewModel::updateSectionIndex
  */
+
+API_DEPRECATED_END

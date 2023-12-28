@@ -1,5 +1,5 @@
 //
-// Copyright 2012 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 #import "NITableViewActions.h"
 
 #import "NICellFactory.h"
-#import "NITableViewModel.h"
 #import "NimbusCore.h"
 #import "NIActions+Subclassing.h"
 #import <objc/runtime.h>
@@ -27,19 +26,13 @@
 #endif
 
 @interface NITableViewActions()
-@property (nonatomic, NI_STRONG) NSMutableSet* forwardDelegates;
+@property (nonatomic, strong) NSMutableSet* forwardDelegates;
 @end
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation NITableViewActions
 
-@synthesize forwardDelegates = _forwardDelegates;
-@synthesize tableViewCellSelectionStyle = _tableViewCellSelectionStyle;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithTarget:(id)target {
   if ((self = [super initWithTarget:target])) {
     _forwardDelegates = NICreateNonRetainingMutableSet();
@@ -48,21 +41,15 @@
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - Forward Invocations
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)shouldForwardSelector:(SEL)selector {
   struct objc_method_description description;
   description = protocol_getMethodDescription(@protocol(UITableViewDelegate), selector, NO, YES);
   return (description.name != NULL && description.types != NULL);
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)respondsToSelector:(SEL)selector {
   if ([super respondsToSelector:selector]) {
     return YES;
@@ -77,8 +64,6 @@
   return NO;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)selector {
   NSMethodSignature *signature = [super methodSignatureForSelector:selector];
   if (signature == nil) {
@@ -91,8 +76,6 @@
   return signature;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)forwardInvocation:(NSInvocation *)invocation {
   BOOL didForward = NO;
   
@@ -111,26 +94,18 @@
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id<UITableViewDelegate>)forwardingTo:(id<UITableViewDelegate>)forwardDelegate {
   [self.forwardDelegates addObject:forwardDelegate];
   return self;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)removeForwarding:(id<UITableViewDelegate>)forwardDelegate {
   [self.forwardDelegates removeObject:forwardDelegate];
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - Object State
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (UITableViewCellAccessoryType)accessoryTypeForObject:(id)object {
   NIObjectActions* action = [self actionForObjectOrClassOfObject:object];
   // Detail disclosure indicator takes precedence over regular disclosure indicator.
@@ -146,8 +121,6 @@
   return UITableViewCellAccessoryNone;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (UITableViewCellSelectionStyle)selectionStyleForObject:(id)object {
   // If the cell is tappable, reflect that in the selection style.
   NIObjectActions* action = [self actionForObjectOrClassOfObject:object];
@@ -159,18 +132,13 @@
   return UITableViewCellSelectionStyleNone;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - UITableViewDelegate
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
-  NIDASSERT([tableView.dataSource isKindOfClass:[NITableViewModel class]]);
-  if ([tableView.dataSource isKindOfClass:[NITableViewModel class]]) {
-    NITableViewModel* model = (NITableViewModel *)tableView.dataSource;
-    id object = [model objectAtIndexPath:indexPath];
+  NIDASSERT([tableView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]);
+  if ([tableView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]) {
+    id object = [(id<NIActionsDataSource>)tableView.dataSource objectAtIndexPath:indexPath];
     if ([self isObjectActionable:object]) {
       cell.accessoryType = [self accessoryTypeForObject:object];
       cell.selectionStyle = [self selectionStyleForObject:object];
@@ -188,12 +156,18 @@
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-  NIDASSERT([tableView.dataSource isKindOfClass:[NITableViewModel class]]);
-  if ([tableView.dataSource isKindOfClass:[NITableViewModel class]]) {
-    NITableViewModel* model = (NITableViewModel *)tableView.dataSource;
-    id object = [model objectAtIndexPath:indexPath];
+  NIDASSERT([tableView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]);
+
+  // On iOS 8 and below, UITableViewDelegate is marked "assign". This means that the delegate
+  // (i.e. self) is not retained before delegate methods (such as this one) are invoked.
+  // Therefore, if any of the actions ends up removing a reference to self, we may become
+  // dealloc'd before the end of this method invocation. So we create a strong reference to self
+  // to make sure all actions are carried out as expected.
+      NITableViewActions *strongSelf = self;
+
+  if ([tableView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]) {
+    id object = [(id<NIActionsDataSource>)tableView.dataSource objectAtIndexPath:indexPath];
 
     if ([self isObjectActionable:object]) {
       NIObjectActions* action = [self actionForObjectOrClassOfObject:object];
@@ -201,10 +175,10 @@
       BOOL shouldDeselect = NO;
       if (action.tapAction) {
         // Tap actions can deselect the row if they return YES.
-        shouldDeselect = action.tapAction(object, self.target, indexPath);
+        shouldDeselect = action.tapAction(object, strongSelf.target, indexPath);
       }
-      if (action.tapSelector && [self.target respondsToSelector:action.tapSelector]) {
-        NSMethodSignature *methodSignature = [self.target methodSignatureForSelector:action.tapSelector];
+      if (action.tapSelector && [strongSelf.target respondsToSelector:action.tapSelector]) {
+        NSMethodSignature *methodSignature = [strongSelf.target methodSignatureForSelector:action.tapSelector];
         NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSignature];
         invocation.selector = action.tapSelector;
         if (methodSignature.numberOfArguments >= 3) {
@@ -213,7 +187,7 @@
         if (methodSignature.numberOfArguments >= 4) {
           [invocation setArgument:&indexPath atIndex:3];
         }
-        [invocation invokeWithTarget:self.target];
+        [invocation invokeWithTarget:strongSelf.target];
 
         NSUInteger length = invocation.methodSignature.methodReturnLength;
         if (length > 0) {
@@ -234,32 +208,29 @@
       }
 
       if (action.navigateAction) {
-        action.navigateAction(object, self.target, indexPath);
+        action.navigateAction(object, strongSelf.target, indexPath);
       }
-      if (action.navigateSelector && [self.target respondsToSelector:action.navigateSelector]) {
+      if (action.navigateSelector && [strongSelf.target respondsToSelector:action.navigateSelector]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        [self.target performSelector:action.navigateSelector withObject:object withObject:indexPath];
+        [strongSelf.target performSelector:action.navigateSelector withObject:object withObject:indexPath];
 #pragma clang diagnostic pop
       }
     }
   }
 
   // Forward the invocation along.
-  for (id<UITableViewDelegate> delegate in self.forwardDelegates) {
+  for (id<UITableViewDelegate> delegate in strongSelf.forwardDelegates) {
     if ([delegate respondsToSelector:_cmd]) {
       [delegate tableView:tableView didSelectRowAtIndexPath:indexPath];
     }
   }
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-  NIDASSERT([tableView.dataSource isKindOfClass:[NITableViewModel class]]);
-  if ([tableView.dataSource isKindOfClass:[NITableViewModel class]]) {
-    NITableViewModel* model = (NITableViewModel *)tableView.dataSource;
-    id object = [model objectAtIndexPath:indexPath];
+  NIDASSERT([tableView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]);
+  if ([tableView.dataSource conformsToProtocol:@protocol(NIActionsDataSource)]) {
+    id object = [(id<NIActionsDataSource>)tableView.dataSource objectAtIndexPath:indexPath];
 
     if ([self isObjectActionable:object]) {
       NIObjectActions* action = [self actionForObjectOrClassOfObject:object];

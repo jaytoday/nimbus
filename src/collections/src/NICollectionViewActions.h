@@ -1,5 +1,5 @@
 //
-// Copyright 2013 Jeff Verkoeyen
+// Copyright 2011-2014 NimbusKit
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@
 #import "NimbusCore.h"
 
 /**
- * The NICollectionViewActions class provides an interface for attaching actions to objects in a
- * NICollectionViewModel.
+ * The NICollectionViewActions class provides an interface for attaching actions to objects from a
+ * NIActionsDataSource.
  *
  * <h2>Basic Use</h2>
  *
- * NICollectionViewModel and NICollectionViewActions cooperate to solve two related tasks: data
- * representation and user actions, respectively. A NICollectionViewModel is composed of objects and
- * NICollectionViewActions maintains a mapping of actions to these objects. The object's attached
- * actions are executed when the user interacts with the cell representing an object.
+ * NIActionsDataSource and NICollectionViewActions cooperate to solve two related tasks: data
+ * representation and user actions, respectively. A NIActionsDataSource provides objects and
+ * NICollectionViewActions maintains a mapping of actions to these objects. The object's
+ * attached actions are executed when the user interacts with the cell representing an object.
  *
  * <h2>Delegate Forwarding</h2>
  *
@@ -36,10 +36,10 @@
  * cells to be highlighted only if the cell's object has an attached action.
  * didSelectItemAtIndexPath: will execute the object's attached tap actions.
  *
- * If you use the delegate forwarders your collection view's data source must be an instance of
- * NICollectionViewModel.
+ * If you use the delegate forwarders your collection view's data source must conform to
+ * NIActionsDataSource.
  *
- *      @ingroup CollectionViewTools
+ * @ingroup CollectionViewTools
  */
 @interface NICollectionViewActions : NIActions
 
